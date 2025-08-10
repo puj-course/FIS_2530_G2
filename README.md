@@ -7,3 +7,7 @@ This project develops a desktop application for medical purposes such as:
 
 Inline-style: 
 
+<img width="256" height="256" alt="Image" src="https://github.com/user-attachments/assets/728f21df-944d-47e2-be2b-3774a8fba0e6" />
+
+![Image](https://github.com/user-attachments/assets/a21837d2-e7f8-43eb-a413-2d070cac3f71)
+
