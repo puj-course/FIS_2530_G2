@@ -12,4 +12,6 @@ SDG's that we directly work on:
 
 We will keep modifying this readme till the project's finished. Thx
 
+Sourcetree and github desktop are both useful tools but only for low level engineers.
+
 
