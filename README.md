@@ -14,4 +14,9 @@ We will keep modifying this readme till the project's finished. Thx
 
 Sourcetree and github desktop are both useful tools but only for low level engineers.
 
+🚀 Equipo de Desarrollo
+* Samuel Bonilla: SCRUM master (we've yet to decide exact implementation roles)
+* Juan David Acuña Lesmes: Full time developer
+* Jonathan Martinez Gomez: Product Owner and developer
+* Juan Guillermo Gomez Landinez: Stakeholder and developer
 
