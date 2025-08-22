@@ -1,5 +1,5 @@
-# Sistema Integrado de Salud
-This project develops a desktop application for medical purposes such as:
+# Sistema Integrado de Salud (SIS) 
+Health Integrated System (SIS in spanish) project is being developed as a desktop application for medical purposes such as:
 
 1. Storing pacients data both locally and in a cloud
 2. Letting the user consult information relative to a patient
@@ -14,7 +14,7 @@ We will keep modifying this readme till the project's finished. Thx
 
 Sourcetree and github desktop are both useful tools but only for low level engineers.
 
-# 🚀 Equipo de Desarrollo
+# 🚀 Development Team
 * Samuel Bonilla Bravo: SCRUM master (we've yet to decide exact implementation roles)
 * Juan David Acuña Lesmes: Full time developer
 * Jonathan Martinez Gomez: Product Owner and developer
