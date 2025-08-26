@@ -1,0 +1,1 @@
+Document yet to be settled down. Since development of project is in course, no implementation advices are defined. Therefore this will be defined at pace with the development of the project.
