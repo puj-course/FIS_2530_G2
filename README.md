@@ -21,5 +21,4 @@ Sourcetree and github desktop are both useful tools but only for low level engin
 * Samuel Bonilla Bravo: SCRUM master (we've yet to decide exact implementation roles)
 * Juan David Acuña Lesmes: Full time developer
 * Jonathan Martinez Gomez: Product Owner and developer
-* Juan Guillermo Gomez Landinez: Stakeholder and developer
-
+* Juan Guillermo Gomez Landinez: Stakeholder and developer (TALLER_2).
