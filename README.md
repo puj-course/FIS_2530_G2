@@ -1,5 +1,6 @@
 # Sistema Integrado de Salud (SIS) 
-<img width="256" height="256" alt="image" src="https://github.com/user-attachments/assets/a3ff1188-7ee8-4444-bd82-b8c3d8170b80" />
+<img width="256" height="256" alt="SIS-logo" src="https://github.com/user-attachments/assets/d296eacf-8640-4967-97db-7738bd632bff" />
+
 
 Health Integrated System (SIS in spanish) project is being developed as a desktop application for medical purposes such as:
 
