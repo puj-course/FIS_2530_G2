@@ -1,5 +1,5 @@
 # Sistema Integrado de Salud (SIS) 
-<img width="467" height="467" alt="image" src="https://github.com/user-attachments/assets/e99b121c-052c-49d7-a1bf-c85eaedbac23" />
+<img width="256" height="256" alt="image" src="https://github.com/user-attachments/assets/e99b121c-052c-49d7-a1bf-c85eaedbac23" />
 
 
 
