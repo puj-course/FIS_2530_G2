@@ -1,0 +1,21 @@
+¿Qué es un mileston y como se utiliza?
+
+Para crear un milestone que realmente funcione, la clave está en la planificación. Un
+buen hito va más allá de un simple título; es un objetivo con un camino bien definido.
+
+Antes de crear el milestone, es crucial que te hagas estas tres preguntas: ¿Cuál es el
+objetivo específico de este hito? ¿Qué tareas o errores están directamente relacionados 
+con él? y ¿Cuándo debería estar finalizado?.
+
+Una vez que tengas las respuestas claras, el proceso en GitHub es simple. Elige un 
+título que resuma el objetivo de forma clara y concisa. Luego, redacta una descripción 
+que detalle el alcance del proyecto y las características que se incluirán. Finalmente, 
+establece una fecha límite realista.
+
+Después de la creación, el siguiente paso es asignar todos los issues y pull requests 
+que pertenezcan a ese hito. Esto es lo que une las tareas individuales a la meta principal.
+
+Usar los milestones de esta forma asegura que cada uno tenga un propósito definido, un 
+nombre claro, una fecha límite y todas las tareas que le corresponden. Esta es la mejor 
+manera de transformar una simple lista de pendientes en un plan de proyecto concreto y 
+manejable.
