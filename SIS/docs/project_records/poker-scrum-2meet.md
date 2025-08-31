@@ -53,7 +53,5 @@ onilla y gille 3 : podriamos poner una branch para un docmento y creo que en el 
 gllermo en 4 es dificil , no me sliencien
 
 
-#3
-
 3 concenso
 
