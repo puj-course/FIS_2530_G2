@@ -62,3 +62,4 @@ Ej: Para una historia de usuario, se debería tener varias branches, ya que impl
 * Poker Scrum Iteración 3:
     Todos estamos de acuerdo con 3.
 
+closes #46
