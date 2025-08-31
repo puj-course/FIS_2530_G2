@@ -7,7 +7,7 @@
 - Jhony (diamantes)
 
 
-Kamban fix
+## Kamban fix
 # 1
 
 bonilla: 2 porque quiero ya es algo que conocemos y no deberia tomar tanto tiempo.
@@ -21,7 +21,7 @@ Acuña: 5 Si no hacemos adecuadamente el proyecto vamos a tener problemas de com
 
 R 5-4-3-4 Al ser similares todos concordamos que sean 4
 
-Planificación sprints:
+## Planificación sprints:
 
 Borrar sprints: viernes 8pm, borrar sprints
 
@@ -29,7 +29,7 @@ Borrar sprints: viernes 8pm, borrar sprints
 2-2-2-2 La tarea no cunsume muchos tiempo y puede ser completeda en menos de 1h
 
 
-Milestone: aprneder-trabar
+## Milestone: aprneder-trabar
 
 # 1
 
@@ -45,7 +45,7 @@ acuña 4 entender nlo pequeño y el resto l miramos por el comino
 
 4 ha sido el concenso de la tarea
 
-Renombrar branches por integrantes: APRENDER A UDAR RAMAS
+## Renombrar branches por integrantes: APRENDER A JUNTAR RAMAS
 
 # 1
 
@@ -59,7 +59,8 @@ onilla y gille 3 : podriamos poner una branch para un docmento y creo que en el 
 gllermo en 4 es dificil , no me sliencien
 
 
-3 concenso
+# 3 
+concenso
 
 
 
