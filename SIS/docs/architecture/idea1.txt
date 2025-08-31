@@ -1,1 +1,0 @@
-Como arquitectura propongo una arquitectura cliente servidor, ya ue estamos acostumbrados mucho a las paginas web lo cual en una red privada de internet que no necesariamente tenga wifi puede permiir ingresar a la solucion. Se usara un autenticación simple ya que la idea es que solo los dispositivos autorizados de la red puedan accder al recurso por medidas de seguridad
