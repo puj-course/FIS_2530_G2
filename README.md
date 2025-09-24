@@ -9,6 +9,10 @@ Health Integrated System (SIS in spanish) project is being developed as a deskto
 2. Letting the user consult information relative to a patient
 3. Storing procedures related to a patient
 
+Our main objetive is to provide a solution so that the hospitals with poor data management can have access to proper tools so that 
+this process is improved. Since we've yet to have plenty iterations with the client, **this may change quite a lot**, regardless the main objetive and course 
+of the project will remain the same.
+
 SDG's that we directly work on:
 
 ![Image](https://github.com/user-attachments/assets/9fc67283-a14f-4881-a938-1c425f3a2672)
