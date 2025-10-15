@@ -23,7 +23,7 @@ jobs:
           cache: maven
 
       - name: Build and run tests
-        run:  mvn -B clean package -f FIS_2530_G2/src/test/SIS/pom.xml
+        run:  mvn -B clean package -f src/test/SIS/pom.xml
 
       - name: Upload JAR artifact
         if: success()
