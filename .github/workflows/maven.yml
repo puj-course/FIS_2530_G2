@@ -39,9 +39,9 @@ jobs:
           name: surefire-reports
           path: target/surefire-reports/**
 
-      - name: Update dependency graph
-        if: success()
-        uses: advanced-security/maven-dependency-submission-action@v4
+      # - name: Update dependency graph
+       # if: success()
+        # uses: advanced-security/maven-dependency-submission-action@v4
         # o mantén la versión que tenías si esta acción no tiene release v4
 
   ai-review:
