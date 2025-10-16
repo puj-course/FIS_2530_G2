@@ -7,7 +7,17 @@ Health Integrated System (SIS) is a desktop application for medical purposes suc
 2. Consulting information related to a patient
 3. Registering procedures related to a patient
 
-SDGs directly addressed:
+Health Integrated System (SIS in spanish) project is being developed as a desktop application for medical purposes such as:
+
+1. Storing pacients data both locally and in a cloud
+2. Letting the user consult information relative to a patient
+3. Storing procedures related to a patient
+
+Our main objetive is to provide a solution so that the hospitals with poor data management can have access to proper tools so that 
+this process is improved. Since we've yet to have plenty iterations with the client, **this may change quite a lot**, regardless the main objetive and course 
+of the project will remain the same.
+
+SDG's that we directly work on:
 
 ![Image](https://github.com/user-attachments/assets/9fc67283-a14f-4881-a938-1c425f3a2672)
 <img width="150" height="150" alt="Image" src="https://github.com/user-attachments/assets/c629c4f7-1db9-4c1b-a95b-477f63e76c69" />
