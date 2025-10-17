@@ -1,0 +1,5 @@
+El paciente mediante ticket es llamado a admisiones
+Admiciones le pide su identificacion
+Admiciones por medio de su identificacion verifica en el sistema si el paciente ya se encuentra en la base de datos o toca agregarlo
+Admiciones si el paciente es nuevo crea un nuevo perfil del paciente, con su nombre, edad, fecha de nacieminto, genero, numero celular y tipo y numero de identificacion
+Admisiones cierra proceso con paciente actual y guarda los datos  
