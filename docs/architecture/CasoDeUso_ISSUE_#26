@@ -1,0 +1,11 @@
+EL paciente entra a la sala
+la enfermera pregunta por su cedula de ciudadania
+El paciente le da cedula de ciudadania
+La enfermera hace una consulta con la cedula de ciudadania para ver historial medico del paciente
+La enfermera pregunta por sintomas 
+El paciente dice sus sintomas 
+La enfermera escribe en la opcion triage en el perfil del usuario los sintomas en la fecha del suceso 
+LA enfermera toma signos vitales 
+La enfermera anota signos vitales en el perfil del usuario
+La enfermera asigna numero de triage
+La enfermera cierra triage 
