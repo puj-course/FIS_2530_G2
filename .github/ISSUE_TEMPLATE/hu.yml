@@ -1,0 +1,83 @@
+name: Historia de Usuario (HU)
+description: Crea una nueva historia de usuario siguiendo el formato INVEST.
+title: "HU-: [Breve descripción de la historia]"
+labels: ["historia de usuario"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 🧾 Formulario de Historia de Usuario (Formato INVEST)
+        Completa los siguientes campos. Todos son obligatorios para mantener la coherencia del backlog.
+
+  - type: input
+    id: autor
+    attributes:
+      label: 👤 Autor
+      description: ¿Quién propone esta historia?
+      placeholder: Ej. Samuel López
+    validations:
+      required: true
+
+  - type: textarea
+    id: descripcion
+    attributes:
+      label: 🧩 Descripción
+      description: Escribe la historia en formato “Como [rol], quiero [objetivo] para [beneficio]”.
+      placeholder: |
+        Como padre, quiero que mi hijo reciba notificaciones automáticas de sus tareas escolares, para asegurarme de que no olvide entregarlas a tiempo.
+    validations:
+      required: true
+
+  - type: textarea
+    id: criterios
+    attributes:
+      label: ✅ Criterios de aceptación
+      description: Especifica los criterios que permitirán verificar si la historia está completa.
+      placeholder: |
+        1. El sistema envía una notificación cuando se crea una tarea nueva.
+        2. El padre puede activar o desactivar las notificaciones.
+        3. La notificación incluye el nombre de la tarea y la fecha límite.
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        ### 📋 Criterios INVEST (marca que los cumple)
+        **La historia debe cumplir con los siguientes principios:**
+
+  - type: checkboxes
+    id: invest
+    attributes:
+      label: Formato INVEST
+      options:
+        - label: I – Independiente
+          required: true
+        - label: N – Negociable
+          required: true
+        - label: V – Valiosa
+          required: true
+        - label: E – Estimable
+          required: true
+        - label: S – Small (pequeña)
+          required: true
+        - label: T – Testable
+          required: true
+
+  - type: dropdown
+    id: prioridad
+    attributes:
+      label: 🚦 Prioridad
+      options:
+        - Alta
+        - Media
+        - Baja
+    validations:
+      required: true
+
+  - type: textarea
+    id: notas
+    attributes:
+      label: 🗒️ Notas adicionales
+      description: Detalles opcionales, referencias o dependencias con otras historias.
