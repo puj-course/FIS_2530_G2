@@ -1,39 +1,117 @@
-name: Move Issue to In Review
+name: 🚀 Mover issue cerrado a "Review"
 
 on:
-  pull_request:
-    types: [opened, reopened]
-    branches:
-      - develop
+  issues:
+    types: [closed]  # Se dispara cuando un issue es cerrado (por el close-issues.yml o manualmente)
 
 jobs:
-  move-issue:
+  move_to_review:
     runs-on: ubuntu-latest
     steps:
-      - name: Extract issue number from PR body or title
-        id: extract
-        run: |
-          ISSUE=$(echo "${{ github.event.pull_request.body }}${{ github.event.pull_request.title }}" | grep -oE '#[0-9]+' | head -1 | tr -d '#')
-          echo "issue=$ISSUE" >> $GITHUB_OUTPUT
-
-      - name: Move issue to "In Review"
-        if: steps.extract.outputs.issue != ''
+      - name: 🔄 Mover issue a columna "Review"
         uses: actions/github-script@v7
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.GH_TOKEN }}
           script: |
-            const issue_number = ${{ steps.extract.outputs.issue }};
-            const projectId = 'TU_PROJECT_ID';
-            const statusFieldId = 'TU_STATUS_FIELD_ID';
-            await github.graphql(`
-              mutation {
-                updateProjectV2ItemFieldValue(
-                  input: {
-                    projectId: "${projectId}",
-                    itemId: "${issue_number}",
-                    fieldId: "${statusFieldId}",
-                    value: { singleSelectOptionId: "ID_IN_REVIEW" }
+            // ==============================
+            // CONFIGURACIÓN
+            // ==============================
+            const projectNumber = 1; // Número del proyecto (no ID)
+            const organization = "puj-course"; // Nombre de la organización o usuario
+            const targetStatus = "Review"; // Estado destino dentro del tablero
+
+            // ==============================
+            // 1️⃣ Obtener ID del proyecto
+            // ==============================
+            const queryProject = `
+              query($org: String!, $number: Int!) {
+                organization(login: $org) {
+                  projectV2(number: $number) {
+                    id
+                    fields(first: 50) {
+                      nodes {
+                        id
+                        name
+                        ... on ProjectV2SingleSelectField {
+                          options {
+                            id
+                            name
+                          }
+                        }
+                      }
+                    }
                   }
-                ) { clientMutationId }
+                }
               }
-            `);
+            `;
+            const variables = { org: organization, number: projectNumber };
+            const projectData = await github.graphql(queryProject, variables);
+            const project = projectData.organization.projectV2;
+            const projectId = project.id;
+            const statusField = project.fields.nodes.find(f => f.name === "Status");
+
+            if (!statusField) {
+              core.setFailed("❌ Campo 'Status' no encontrado en el proyecto.");
+              return;
+            }
+
+            const reviewOption = statusField.options.find(o => o.name === targetStatus);
+            if (!reviewOption) {
+              core.setFailed(`❌ Opción '${targetStatus}' no encontrada en el campo Status.`);
+              return;
+            }
+
+            // ==============================
+            // 2️⃣ Buscar el item del issue cerrado
+            // ==============================
+            const issueNodeId = context.payload.issue.node_id;
+
+            const queryItem = `
+              query($projectId: ID!, $issueId: ID!) {
+                node(id: $projectId) {
+                  ... on ProjectV2 {
+                    items(first: 100) {
+                      nodes {
+                        id
+                        content {
+                          ... on Issue {
+                            id
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            `;
+            const itemsData = await github.graphql(queryItem, { projectId: projectId, issueId: issueNodeId });
+            const item = itemsData.node.items.nodes.find(i => i.content && i.content.id === issueNodeId);
+
+            if (!item) {
+              core.setFailed("⚠️ No se encontró el issue en el proyecto.");
+              return;
+            }
+
+            // ==============================
+            // 3️⃣ Actualizar el campo 'Status' → "Review"
+            // ==============================
+            const mutation = `
+              mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) {
+                updateProjectV2ItemFieldValue(input: {
+                  projectId: $projectId
+                  itemId: $itemId
+                  fieldId: $fieldId
+                  value: { singleSelectOptionId: $optionId }
+                }) {
+                  clientMutationId
+                }
+              }
+            `;
+            await github.graphql(mutation, {
+              projectId: projectId,
+              itemId: item.id,
+              fieldId: statusField.id,
+              optionId: reviewOption.id
+            });
+
+            console.log(`✅ Issue movido a '${targetStatus}' en el tablero del proyecto.`);
