@@ -1,0 +1,40 @@
+name: Move Issue to In Progress
+
+on:
+  create:
+    branches:
+      - '**'
+
+jobs:
+  move-issue:
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/heads/')
+    steps:
+      - name: Extract issue number from branch name
+        id: extract
+        run: |
+          BRANCH_NAME=${GITHUB_REF#refs/heads/}
+          ISSUE=$(echo "$BRANCH_NAME" | grep -oE '[0-9]+')
+          echo "issue=$ISSUE" >> $GITHUB_OUTPUT
+
+      - name: Move issue to "In Progress"
+        if: steps.extract.outputs.issue != ''
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const issue_number = ${{ steps.extract.outputs.issue }};
+            const projectId = 'TU_PROJECT_ID';
+            const statusFieldId = 'TU_STATUS_FIELD_ID';
+            await github.graphql(`
+              mutation {
+                updateProjectV2ItemFieldValue(
+                  input: {
+                    projectId: "${projectId}",
+                    itemId: "${issue_number}",
+                    fieldId: "${statusFieldId}",
+                    value: { singleSelectOptionId: "ID_IN_PROGRESS" }
+                  }
+                ) { clientMutationId }
+              }
+            `);
