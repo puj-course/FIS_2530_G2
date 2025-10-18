@@ -1,0 +1,40 @@
+name: Cerrar issues desde commits
+
+on:
+  push:
+    branches:
+      - develop
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  close_issues:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🔍 Buscar commits con "Closes #"
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const commits = context.payload.commits;
+            for (const commit of commits) {
+              const matches = commit.message.match(/Closes\s+#(\d+)/gi);
+              if (matches) {
+                for (const match of matches) {
+                  const issueNumber = match.match(/\d+/)[0];
+                  console.log(`Cerrando issue #${issueNumber} por commit ${commit.id}`);
+                  await github.rest.issues.update({
+                    ...context.repo,
+                    issue_number: issueNumber,
+                    state: "closed"
+                  });
+                  await github.rest.issues.createComment({
+                    ...context.repo,
+                    issue_number: issueNumber,
+                    body: `🔒 Cerrado automáticamente por commit: [${commit.id.substring(0,7)}](${commit.url})`
+                  });
+                }
+              }
+            }
