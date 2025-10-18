@@ -1,10 +1,13 @@
-name: 🔒 Cerrar issues desde commits
+name: Cerrar issues desde commits
 
 on:
   push:
     branches:
       - develop
-      - main
+
+permissions:
+  issues: write
+  contents: read
 
 jobs:
   close_issues:
