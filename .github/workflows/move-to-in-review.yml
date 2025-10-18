@@ -1,4 +1,4 @@
-name: 🚀 Mover issue cerrado a "Review"
+name: Mover issue cerrado a "Review" test
 
 on:
   issues:
