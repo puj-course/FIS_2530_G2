@@ -1,0 +1,70 @@
+name: Validar formato INVEST en Issues HU
+
+on:
+  issues:
+    types: [opened, edited]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🧾 Verificar formato de issue HU
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const issue = context.payload.issue;
+            const title = issue.title.trim();
+            const body = issue.body ? issue.body.trim() : "";
+
+            // Validar que el título comience con "HU"
+            if (!title.startsWith("HU")) {
+              await github.rest.issues.createComment({
+                ...context.repo,
+                issue_number: issue.number,
+                body: "❌ El título debe comenzar con **HU** (Historia de Usuario)."
+              });
+              await github.rest.issues.addLabels({
+                ...context.repo,
+                issue_number: issue.number,
+                labels: ["invalid"]
+              });
+              return;
+            }
+
+            // Validación INVEST básica
+            const checks = [
+              { key: "I", text: "Independiente" },
+              { key: "N", text: "Negociable" },
+              { key: "V", text: "Valiosa" },
+              { key: "E", text: "Estimable" },
+              { key: "S", text: "Small (pequeña)" },
+              { key: "T", text: "Testable" }
+            ];
+
+            const missing = checks.filter(c => !body.includes(c.text));
+
+            if (missing.length > 0) {
+              const list = missing.map(m => `- Falta el criterio **${m.text}**`).join("\n");
+              await github.rest.issues.createComment({
+                ...context.repo,
+                issue_number: issue.number,
+                body: `⚠️ La historia no cumple completamente el formato INVEST:\n${list}`
+              });
+              await github.rest.issues.addLabels({
+                ...context.repo,
+                issue_number: issue.number,
+                labels: ["review-needed"]
+              });
+            } else {
+              await github.rest.issues.createComment({
+                ...context.repo,
+                issue_number: issue.number,
+                body: "✅ El issue cumple con el formato INVEST."
+              });
+              await github.rest.issues.addLabels({
+                ...context.repo,
+                issue_number: issue.number,
+                labels: ["validated"]
+              });
+            }
