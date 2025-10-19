@@ -3,6 +3,9 @@ name: Move Issue to Done
 on:
   pull_request:
     types: [closed]
+    branches:
+      - main
+      - develop
 
 jobs:
   move-issue:
@@ -12,19 +15,30 @@ jobs:
       - name: Extract issue number from PR
         id: extract
         run: |
-          # Buscar issue number en el título o cuerpo del PR
           PR_TITLE="${{ github.event.pull_request.title }}"
           PR_BODY="${{ github.event.pull_request.body }}"
           PR_BRANCH="${{ github.event.pull_request.head.ref }}"
           
-          # Intentar extraer de título, cuerpo o nombre de rama
-          ISSUE=$(echo "$PR_TITLE $PR_BODY $PR_BRANCH" | grep -oE '#[0-9]+' | head -1 | tr -d '#')
+          # Prioridad 1: Buscar "Closes #<número>" en el cuerpo o título
+          ISSUE=$(echo "$PR_TITLE $PR_BODY" | grep -oiE '(close[sd]?|fix(e[sd])?|resolve[sd]?) #[0-9]+' | grep -oE '[0-9]+' | head -1)
           
+          # Prioridad 2: Buscar #<número> en el nombre de la rama (feature/#23-name)
+          if [ -z "$ISSUE" ]; then
+            ISSUE=$(echo "$PR_BRANCH" | grep -oE '#[0-9]+' | tr -d '#' | head -1)
+          fi
+          
+          # Prioridad 3: Buscar cualquier número en el nombre de la rama
           if [ -z "$ISSUE" ]; then
             ISSUE=$(echo "$PR_BRANCH" | grep -oE '[0-9]+' | head -1)
           fi
           
           echo "issue=$ISSUE" >> $GITHUB_OUTPUT
+          
+          if [ -n "$ISSUE" ]; then
+            echo "✅ Issue detectado: #$ISSUE"
+          else
+            echo "⚠️ No se detectó ningún issue en el PR"
+          fi
           
       - name: Move issue to "Done"
         if: steps.extract.outputs.issue != ''
@@ -36,6 +50,8 @@ jobs:
             const projectNumber = 44;
             const organization = "puj-course";
             const targetStatus = "Done";
+
+            console.log(`🎯 Procesando issue #${issueNumber} tras merge del PR #${context.payload.pull_request.number}`);
 
             // ==============================
             // 1️⃣ Obtener ID del proyecto y campos
@@ -97,11 +113,17 @@ jobs:
             // ==============================
             // 2️⃣ Obtener el node_id del issue
             // ==============================
-            const issueData = await github.rest.issues.get({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: issueNumber
-            });
+            let issueData;
+            try {
+              issueData = await github.rest.issues.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issueNumber
+              });
+            } catch (error) {
+              core.setFailed(`❌ No se pudo obtener el issue #${issueNumber}: ${error.message}`);
+              return;
+            }
             
             const issueNodeId = issueData.data.node_id;
 
@@ -137,6 +159,7 @@ jobs:
 
             if (!item) {
               console.log(`⚠️ Issue #${issueNumber} no está en el proyecto.`);
+              console.log("El issue debe estar agregado al tablero para poder moverlo.");
               return;
             }
 
@@ -165,4 +188,14 @@ jobs:
               optionId: doneOption.id
             });
 
-            console.log(`✅ Issue #${issueNumber} movido a '${targetStatus}' exitosamente!`);
+            console.log(`✅ Issue #${issueNumber} movido a '${targetStatus}' tras merge del PR!`);
+            
+            // Opcional: Cerrar el issue automáticamente
+            await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              state: 'closed'
+            });
+            
+            console.log(`✅ Issue #${issueNumber} cerrado automáticamente.`);
