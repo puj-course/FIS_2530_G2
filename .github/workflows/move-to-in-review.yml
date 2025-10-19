@@ -1,8 +1,8 @@
-name: Mover issue cerrado a "Review" test
+name: 🚀 Mover issue cerrado a "Review"
 
 on:
   issues:
-    types: [closed]  # Se dispara cuando un issue es cerrado (por el close-issues.yml o manualmente)
+    types: [closed]
 
 jobs:
   move_to_review:
@@ -11,7 +11,7 @@ jobs:
       - name: 🔄 Mover issue a columna "Review"
         uses: actions/github-script@v7
         with:
-          github-token: ${{ secrets.GH_TOKEN }}
+          github-token: ${{ secrets.GH_PAT }}
           script: |
             // ==============================
             // CONFIGURACIÓN
@@ -21,18 +21,19 @@ jobs:
             const targetStatus = "Review"; // Estado destino dentro del tablero
 
             // ==============================
-            // 1️⃣ Obtener ID del proyecto
+            // 1️⃣ Obtener ID del proyecto y campo "Status"
             // ==============================
             const queryProject = `
               query($org: String!, $number: Int!) {
                 organization(login: $org) {
                   projectV2(number: $number) {
                     id
-                    fields(first: 50) {
+                    fieldDefinitions(first: 50) {
                       nodes {
                         id
                         name
-                        ... on ProjectV2SingleSelectField {
+                        dataType
+                        ... on ProjectV2SingleSelectFieldDefinition {
                           options {
                             id
                             name
@@ -44,12 +45,13 @@ jobs:
                 }
               }
             `;
+
             const variables = { org: organization, number: projectNumber };
             const projectData = await github.graphql(queryProject, variables);
             const project = projectData.organization.projectV2;
             const projectId = project.id;
-            const statusField = project.fields.nodes.find(f => f.name === "Status");
 
+            const statusField = project.fieldDefinitions.nodes.find(f => f.name === "Status");
             if (!statusField) {
               core.setFailed("❌ Campo 'Status' no encontrado en el proyecto.");
               return;
@@ -66,17 +68,15 @@ jobs:
             // ==============================
             const issueNodeId = context.payload.issue.node_id;
 
-            const queryItem = `
-              query($projectId: ID!, $issueId: ID!) {
+            const queryItems = `
+              query($projectId: ID!) {
                 node(id: $projectId) {
                   ... on ProjectV2 {
                     items(first: 100) {
                       nodes {
                         id
                         content {
-                          ... on Issue {
-                            id
-                          }
+                          ... on Issue { id }
                         }
                       }
                     }
@@ -84,7 +84,7 @@ jobs:
                 }
               }
             `;
-            const itemsData = await github.graphql(queryItem, { projectId: projectId, issueId: issueNodeId });
+            const itemsData = await github.graphql(queryItems, { projectId: projectId });
             const item = itemsData.node.items.nodes.find(i => i.content && i.content.id === issueNodeId);
 
             if (!item) {
