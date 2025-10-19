@@ -18,7 +18,7 @@ jobs:
             // ==============================
             const projectNumber = 44;
             const organization = "puj-course";
-            const targetStatus = "Review";
+            const targetStatus = "In review";
 
             // ==============================
             // 1️⃣ Obtener ID del proyecto y campos
