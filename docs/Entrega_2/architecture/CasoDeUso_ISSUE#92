@@ -1,0 +1,13 @@
+El doctor inicia sesión en el sistema con sus credenciales.
+El doctor ingresa al módulo de pacientes desde el panel principal.
+El sistema muestra un campo de búsqueda para identificar al paciente.
+El doctor ingresa el número de identificación.
+El sistema busca la información en la base de datos.
+El sistema verifica los permisos del doctor para acceder a ese historial.
+Si los permisos son válidos, el sistema recupera el historial médico completo del paciente.
+El sistema muestra el historial médico en una vista detallada y ordenada cronológicamente.
+El doctor revisa la información y analiza la evolución del paciente.
+El doctor utiliza los datos del historial para evaluar la condición actual del paciente y tomar decisiones sobre el tratamiento.
+El sistema registra internamente la fecha y hora de la consulta del historial para trazabilidad.
+El doctor continúa con la atención del paciente de manera informada.
+
