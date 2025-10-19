@@ -226,15 +226,29 @@ jobs:
 
                 console.log(`✅ Issue #${issueNumber} movido a '${targetStatus}' tras merge del PR!`);
                 
-                // Cerrar el issue automáticamente
-                await github.rest.issues.update({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  issue_number: issueNumber,
-                  state: 'closed'
-                });
-                
-                console.log(`✅ Issue #${issueNumber} cerrado automáticamente.`);
+                // Cerrar el issue si está abierto
+                try {
+                  const currentIssue = await github.rest.issues.get({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: issueNumber
+                  });
+                  
+                  if (currentIssue.data.state === 'open') {
+                    await github.rest.issues.update({
+                      owner: context.repo.owner,
+                      repo: context.repo.repo,
+                      issue_number: issueNumber,
+                      state: 'closed',
+                      state_reason: 'completed'
+                    });
+                    console.log(`✅ Issue #${issueNumber} cerrado automáticamente.`);
+                  } else {
+                    console.log(`ℹ️ Issue #${issueNumber} ya estaba cerrado.`);
+                  }
+                } catch (closeError) {
+                  console.log(`⚠️ No se pudo cerrar el issue: ${closeError.message}`);
+                }
                 return;
                 
               } catch (addError) {
@@ -270,12 +284,27 @@ jobs:
 
             console.log(`✅ Issue #${issueNumber} movido a '${targetStatus}' tras merge del PR!`);
             
-            // Opcional: Cerrar el issue automáticamente
-            await github.rest.issues.update({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: issueNumber,
-              state: 'closed'
-            });
-            
-            console.log(`✅ Issue #${issueNumber} cerrado automáticamente.`);
+            // Opcional: Cerrar el issue automáticamente si está abierto
+            try {
+              const currentIssue = await github.rest.issues.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issueNumber
+              });
+              
+              if (currentIssue.data.state === 'open') {
+                await github.rest.issues.update({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issueNumber,
+                  state: 'closed',
+                  state_reason: 'completed'
+                });
+                console.log(`✅ Issue #${issueNumber} cerrado automáticamente.`);
+              } else {
+                console.log(`ℹ️ Issue #${issueNumber} ya estaba cerrado.`);
+              }
+            } catch (closeError) {
+              console.log(`⚠️ No se pudo cerrar el issue #${issueNumber}: ${closeError.message}`);
+              console.log(`El issue se movió a Done pero permanece abierto.`);
+            }
