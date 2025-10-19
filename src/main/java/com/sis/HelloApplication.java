@@ -1,4 +1,4 @@
-package sis.sis;
+package com.sis;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
