@@ -1,43 +1,168 @@
 name: Move Issue to Done
 
 on:
-  issues:
-    types: [closed]
   pull_request:
     types: [closed]
 
 jobs:
   move-issue:
     runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true
     steps:
-      - name: Get issue number
+      - name: Extract issue number from PR
         id: extract
         run: |
-          if [ "${{ github.event_name }}" == "issues" ]; then
-            ISSUE=${{ github.event.issue.number }}
-          else
-            ISSUE=$(echo "${{ github.event.pull_request.body }}" | grep -oE '#[0-9]+' | head -1 | tr -d '#')
+          # Buscar issue number en el título o cuerpo del PR
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          PR_BODY="${{ github.event.pull_request.body }}"
+          PR_BRANCH="${{ github.event.pull_request.head.ref }}"
+          
+          # Intentar extraer de título, cuerpo o nombre de rama
+          ISSUE=$(echo "$PR_TITLE $PR_BODY $PR_BRANCH" | grep -oE '#[0-9]+' | head -1 | tr -d '#')
+          
+          if [ -z "$ISSUE" ]; then
+            ISSUE=$(echo "$PR_BRANCH" | grep -oE '[0-9]+' | head -1)
           fi
+          
           echo "issue=$ISSUE" >> $GITHUB_OUTPUT
-
+          
       - name: Move issue to "Done"
         if: steps.extract.outputs.issue != ''
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GH_TOKEN }}
           script: |
-            const issue_number = ${{ steps.extract.outputs.issue }};
-            const projectId = 'TU_PROJECT_ID';
-            const statusFieldId = 'TU_STATUS_FIELD_ID';
-            await github.graphql(`
-              mutation {
-                updateProjectV2ItemFieldValue(
-                  input: {
-                    projectId: "${projectId}",
-                    itemId: "${issue_number}",
-                    fieldId: "${statusFieldId}",
-                    value: { singleSelectOptionId: "ID_DONE" }
+            const issueNumber = ${{ steps.extract.outputs.issue }};
+            const projectNumber = 44;
+            const organization = "puj-course";
+            const targetStatus = "Done";
+
+            // ==============================
+            // 1️⃣ Obtener ID del proyecto y campos
+            // ==============================
+            const queryProject = `
+              query($org: String!, $number: Int!) {
+                organization(login: $org) {
+                  projectV2(number: $number) {
+                    id
+                    title
+                    fields(first: 50) {
+                      nodes {
+                        __typename
+                        ... on ProjectV2Field {
+                          id
+                          name
+                        }
+                        ... on ProjectV2SingleSelectField {
+                          id
+                          name
+                          options {
+                            id
+                            name
+                          }
+                        }
+                      }
+                    }
                   }
-                ) { clientMutationId }
+                }
               }
-            `);
+            `;
+
+            const projectData = await github.graphql(queryProject, { 
+              org: organization, 
+              number: projectNumber 
+            });
+            
+            const project = projectData.organization.projectV2;
+            const projectId = project.id;
+            console.log(`✅ Proyecto encontrado: ${project.title}`);
+
+            // Buscar el campo Status
+            const statusField = project.fields.nodes.find(
+              f => f.name === "Status" && f.__typename === "ProjectV2SingleSelectField"
+            );
+
+            if (!statusField) {
+              core.setFailed("❌ Campo 'Status' no encontrado.");
+              return;
+            }
+
+            const doneOption = statusField.options.find(o => o.name === targetStatus);
+            if (!doneOption) {
+              core.setFailed(`❌ Opción '${targetStatus}' no encontrada.`);
+              console.log("Opciones disponibles:", statusField.options.map(o => o.name));
+              return;
+            }
+
+            // ==============================
+            // 2️⃣ Obtener el node_id del issue
+            // ==============================
+            const issueData = await github.rest.issues.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber
+            });
+            
+            const issueNodeId = issueData.data.node_id;
+
+            // ==============================
+            // 3️⃣ Buscar el item en el proyecto
+            // ==============================
+            const queryItem = `
+              query($projectId: ID!) {
+                node(id: $projectId) {
+                  ... on ProjectV2 {
+                    items(first: 100) {
+                      nodes {
+                        id
+                        content {
+                          __typename
+                          ... on Issue {
+                            id
+                            number
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            `;
+
+            const itemsData = await github.graphql(queryItem, { projectId });
+
+            const item = itemsData.node.items.nodes.find(
+              i => i.content && i.content.id === issueNodeId
+            );
+
+            if (!item) {
+              console.log(`⚠️ Issue #${issueNumber} no está en el proyecto.`);
+              return;
+            }
+
+            // ==============================
+            // 4️⃣ Actualizar el estado a "Done"
+            // ==============================
+            const mutation = `
+              mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) {
+                updateProjectV2ItemFieldValue(input: {
+                  projectId: $projectId
+                  itemId: $itemId
+                  fieldId: $fieldId
+                  value: { singleSelectOptionId: $optionId }
+                }) {
+                  projectV2Item {
+                    id
+                  }
+                }
+              }
+            `;
+
+            await github.graphql(mutation, {
+              projectId: projectId,
+              itemId: item.id,
+              fieldId: statusField.id,
+              optionId: doneOption.id
+            });
+
+            console.log(`✅ Issue #${issueNumber} movido a '${targetStatus}' exitosamente!`);

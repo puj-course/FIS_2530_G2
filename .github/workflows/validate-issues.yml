@@ -20,23 +20,24 @@ jobs:
             const issue = context.payload.issue;
             const title = issue.title.trim();
             const body = issue.body ? issue.body.trim() : "";
-
-            // Validar que el título comience con "HU"
-            if (!title.startsWith("HU")) {
-              await github.rest.issues.createComment({
-                ...context.repo,
-                issue_number: issue.number,
-                body: "❌ El título debe comenzar con **HU** (Historia de Usuario)."
-              });
-              await github.rest.issues.addLabels({
-                ...context.repo,
-                issue_number: issue.number,
-                labels: ["invalid"]
-              });
+            
+            // ==============================
+            // 1️⃣ Verificar si es una Historia de Usuario
+            // ==============================
+            const isUserStory = title.startsWith("HU");
+            
+            if (!isUserStory) {
+              // Si NO comienza con "HU", simplemente lo ignoramos
+              // Este es un issue normal (bug, tarea, etc.) y es válido
+              console.log(`ℹ️ Issue #${issue.number} no es una Historia de Usuario. No se valida formato INVEST.`);
               return;
             }
-
-            // Validación INVEST básica
+            
+            console.log(`🔍 Validando Historia de Usuario: ${title}`);
+            
+            // ==============================
+            // 2️⃣ Validación INVEST para Historias de Usuario
+            // ==============================
             const checks = [
               { key: "I", text: "Independiente" },
               { key: "N", text: "Negociable" },
@@ -45,30 +46,39 @@ jobs:
               { key: "S", text: "Small (pequeña)" },
               { key: "T", text: "Testable" }
             ];
-
+            
             const missing = checks.filter(c => !body.includes(c.text));
-
+            
             if (missing.length > 0) {
-              const list = missing.map(m => `- Falta el criterio **${m.text}**`).join("\n");
+              // Historia de Usuario incompleta
+              const list = missing.map(m => `- Falta el criterio **${m.text}** (${m.key})`).join("\n");
+              
               await github.rest.issues.createComment({
                 ...context.repo,
                 issue_number: issue.number,
-                body: `⚠️ La historia no cumple completamente el formato INVEST:\n${list}`
+                body: `⚠️ **Historia de Usuario incompleta**\n\nLa historia no cumple completamente el formato INVEST:\n${list}\n\n📋 Por favor, completa estos criterios usando el template de Historia de Usuario.`
               });
+              
               await github.rest.issues.addLabels({
                 ...context.repo,
                 issue_number: issue.number,
-                labels: ["review-needed"]
+                labels: ["user-story", "review-needed"]
               });
+              
+              console.log(`⚠️ HU incompleta. Faltan ${missing.length} criterios INVEST.`);
             } else {
+              // Historia de Usuario válida
               await github.rest.issues.createComment({
                 ...context.repo,
                 issue_number: issue.number,
-                body: "✅ El issue cumple con el formato INVEST."
+                body: "✅ **Historia de Usuario validada**\n\nEl issue cumple con el formato INVEST completo. ¡Excelente trabajo! 🎉"
               });
+              
               await github.rest.issues.addLabels({
                 ...context.repo,
                 issue_number: issue.number,
-                labels: ["validated"]
+                labels: ["user-story", "validated"]
               });
+              
+              console.log(`✅ HU válida y completa.`);
             }
