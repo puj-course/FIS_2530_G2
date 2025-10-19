@@ -11,12 +11,12 @@ jobs:
       - name: Move issue to Review column
         uses: actions/github-script@v7
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.GH_TOKEN }}
           script: |
             // ==============================
             // CONFIGURACIÓN
             // ==============================
-            const projectNumber = 1;
+            const projectNumber = 44;
             const organization = "puj-course";
             const targetStatus = "Review";
 
@@ -28,6 +28,7 @@ jobs:
                 organization(login: $org) {
                   projectV2(number: $number) {
                     id
+                    title
                     fields(first: 50) {
                       nodes {
                         __typename
@@ -50,26 +51,50 @@ jobs:
               }
             `;
 
-            const variables = { org: organization, number: projectNumber };
-            const projectData = await github.graphql(queryProject, variables);
+            let projectData;
+            try {
+              projectData = await github.graphql(queryProject, { 
+                org: organization, 
+                number: projectNumber 
+              });
+            } catch (error) {
+              core.setFailed(`❌ Error al obtener el proyecto: ${error.message}`);
+              console.log("Asegúrate de que:");
+              console.log("1. El PAT_TOKEN tenga permiso 'project' (read:project)");
+              console.log("2. El PAT_TOKEN tenga acceso a la organización 'puj-course'");
+              console.log("3. El número del proyecto (44) sea correcto");
+              return;
+            }
+            
             const project = projectData.organization.projectV2;
+            
+            if (!project) {
+              core.setFailed("❌ No se pudo encontrar el proyecto 44 en la organización puj-course.");
+              return;
+            }
+            
             const projectId = project.id;
+            console.log(`✅ Proyecto encontrado: ${project.title} (ID: ${projectId})`);
 
-            // Buscar el campo Status (que es SingleSelectField)
+            // Buscar el campo Status
             const statusField = project.fields.nodes.find(
               f => f.name === "Status" && f.__typename === "ProjectV2SingleSelectField"
             );
 
             if (!statusField) {
               core.setFailed("❌ Campo 'Status' no encontrado en el proyecto.");
+              console.log("Campos disponibles:", project.fields.nodes.map(f => `${f.name} (${f.__typename})`));
               return;
             }
 
             const reviewOption = statusField.options.find(o => o.name === targetStatus);
             if (!reviewOption) {
               core.setFailed(`❌ Opción '${targetStatus}' no encontrada en el campo Status.`);
+              console.log("Opciones disponibles:", statusField.options.map(o => o.name));
               return;
             }
+            
+            console.log(`✅ Campo Status encontrado con opción '${targetStatus}'`);
 
             // ==============================
             // 2️⃣ Buscar el item del issue cerrado
@@ -77,7 +102,7 @@ jobs:
             const issueNodeId = context.payload.issue.node_id;
 
             const queryItem = `
-              query($projectId: ID!, $issueId: ID!) {
+              query($projectId: ID!) {
                 node(id: $projectId) {
                   ... on ProjectV2 {
                     items(first: 100) {
@@ -87,6 +112,7 @@ jobs:
                           __typename
                           ... on Issue {
                             id
+                            number
                           }
                         }
                       }
@@ -96,19 +122,19 @@ jobs:
               }
             `;
 
-            const itemsData = await github.graphql(queryItem, { 
-              projectId: projectId, 
-              issueId: issueNodeId 
-            });
+            const itemsData = await github.graphql(queryItem, { projectId });
 
             const item = itemsData.node.items.nodes.find(
               i => i.content && i.content.id === issueNodeId
             );
 
             if (!item) {
-              core.setFailed("⚠️ No se encontró el issue en el proyecto.");
+              console.log("⚠️ Issue #" + context.payload.issue.number + " no está en el proyecto.");
+              console.log("El issue debe estar agregado al proyecto para poder moverlo.");
               return;
             }
+            
+            console.log(`✅ Issue #${item.content.number} encontrado en el proyecto`);
 
             // ==============================
             // 3️⃣ Actualizar el campo 'Status' → "Review"
@@ -121,7 +147,9 @@ jobs:
                   fieldId: $fieldId
                   value: { singleSelectOptionId: $optionId }
                 }) {
-                  clientMutationId
+                  projectV2Item {
+                    id
+                  }
                 }
               }
             `;
@@ -133,4 +161,4 @@ jobs:
               optionId: reviewOption.id
             });
 
-            console.log(`✅ Issue movido a '${targetStatus}' en el tablero del proyecto.`);
+            console.log(`✅ Issue #${item.content.number} movido a '${targetStatus}' exitosamente!`);
