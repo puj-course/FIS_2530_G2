@@ -60,8 +60,8 @@ jobs:
             } catch (error) {
               core.setFailed(`❌ Error al obtener el proyecto: ${error.message}`);
               console.log("Asegúrate de que:");
-              console.log("1. El PAT_TOKEN tenga permiso 'project' (read:project)");
-              console.log("2. El PAT_TOKEN tenga acceso a la organización 'puj-course'");
+              console.log("1. El GH_TOKEN tenga permiso 'project' (read:project)");
+              console.log("2. El GH_TOKEN tenga acceso a la organización 'puj-course'");
               console.log("3. El número del proyecto (44) sea correcto");
               return;
             }
