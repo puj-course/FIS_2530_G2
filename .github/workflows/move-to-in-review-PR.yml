@@ -1,4 +1,4 @@
-name: Move Issue to Review
+name: Move Issue to Review PR
 
 on:
   pull_request:
@@ -121,13 +121,17 @@ jobs:
             }
 
             // ==============================
-            // 2️⃣ Obtener todos los items del proyecto
+            // 2️⃣ Obtener todos los items del proyecto (con paginación)
             // ==============================
             const queryItems = `
-              query($projectId: ID!) {
+              query($projectId: ID!, $cursor: String) {
                 node(id: $projectId) {
                   ... on ProjectV2 {
-                    items(first: 100) {
+                    items(first: 100, after: $cursor) {
+                      pageInfo {
+                        hasNextPage
+                        endCursor
+                      }
                       nodes {
                         id
                         content {
@@ -144,8 +148,20 @@ jobs:
               }
             `;
 
-            const itemsData = await github.graphql(queryItems, { projectId });
-            const projectItems = itemsData.node.items.nodes;
+            let projectItems = [];
+            let hasNextPage = true;
+            let cursor = null;
+
+            // Obtener todos los items con paginación
+            while (hasNextPage) {
+              const itemsData = await github.graphql(queryItems, { projectId, cursor });
+              const items = itemsData.node.items;
+              projectItems.push(...items.nodes);
+              hasNextPage = items.pageInfo.hasNextPage;
+              cursor = items.pageInfo.endCursor;
+            }
+
+            console.log(`📊 Total de items en el proyecto: ${projectItems.length}`);
 
             // ==============================
             // 3️⃣ Procesar cada issue
