@@ -1,0 +1,14 @@
+El doctor inicia sesión en el sistema.
+El doctor abre el perfil del paciente en consulta.
+El doctor selecciona la opción “Registrar diagnóstico oficial”.
+El sistema muestra un formulario para ingresar el código del diagnóstico y las indicaciones de tratamiento.
+El doctor escribe el diagnóstico oficial con su código correspondiente.
+El doctor añade las indicaciones del tratamiento y observaciones necesarias.
+El doctor revisa los datos y confirma el registro.
+El sistema valida la información y adjunta automáticamente la fecha, hora y la identificación del doctor.
+El sistema guarda el diagnóstico en la base de datos con inmutabilidad (no modificable ni eliminable).
+El sistema genera un resumen imprimible o digital del diagnóstico y tratamiento.
+El doctor entrega el resumen al paciente.
+El sistema actualiza inmediatamente el historial médico del paciente con el nuevo diagnóstico.
+El doctor finaliza la consulta. 
+
