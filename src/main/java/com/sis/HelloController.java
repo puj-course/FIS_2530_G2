@@ -1,4 +1,4 @@
-package sis.sis;
+package com.sis;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
