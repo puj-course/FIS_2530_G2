@@ -8,7 +8,7 @@ jobs:
   move_to_review:
     runs-on: ubuntu-latest
     steps:
-      - name: 🔄 Mover issue a columna "Review"
+      - name: 🔄 Mover issue a columna "Review" en kanban
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GH_PAT }}
