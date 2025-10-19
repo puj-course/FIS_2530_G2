@@ -1,39 +1,43 @@
-name: 🚀 Mover issue cerrado a "Review"
+name: Move Closed Issue to Review
 
 on:
   issues:
     types: [closed]
 
 jobs:
-  move_to_review:
+  move-to-review:
     runs-on: ubuntu-latest
     steps:
-      - name: 🔄 Mover issue a columna "Review"
+      - name: Move issue to Review column
         uses: actions/github-script@v7
         with:
-          github-token: ${{ secrets.GH_PAT }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             // ==============================
             // CONFIGURACIÓN
             // ==============================
-            const projectNumber = 1; // Número del proyecto (no ID)
-            const organization = "puj-course"; // Nombre de la organización o usuario
-            const targetStatus = "Review"; // Estado destino dentro del tablero
+            const projectNumber = 1;
+            const organization = "puj-course";
+            const targetStatus = "Review";
 
             // ==============================
-            // 1️⃣ Obtener ID del proyecto y campo "Status"
+            // 1️⃣ Obtener ID del proyecto y campos
             // ==============================
             const queryProject = `
               query($org: String!, $number: Int!) {
                 organization(login: $org) {
                   projectV2(number: $number) {
                     id
-                    fieldDefinitions(first: 50) {
+                    fields(first: 50) {
                       nodes {
-                        id
-                        name
-                        dataType
-                        ... on ProjectV2SingleSelectFieldDefinition {
+                        __typename
+                        ... on ProjectV2Field {
+                          id
+                          name
+                        }
+                        ... on ProjectV2SingleSelectField {
+                          id
+                          name
                           options {
                             id
                             name
@@ -51,7 +55,11 @@ jobs:
             const project = projectData.organization.projectV2;
             const projectId = project.id;
 
-            const statusField = project.fieldDefinitions.nodes.find(f => f.name === "Status");
+            // Buscar el campo Status (que es SingleSelectField)
+            const statusField = project.fields.nodes.find(
+              f => f.name === "Status" && f.__typename === "ProjectV2SingleSelectField"
+            );
+
             if (!statusField) {
               core.setFailed("❌ Campo 'Status' no encontrado en el proyecto.");
               return;
@@ -68,15 +76,18 @@ jobs:
             // ==============================
             const issueNodeId = context.payload.issue.node_id;
 
-            const queryItems = `
-              query($projectId: ID!) {
+            const queryItem = `
+              query($projectId: ID!, $issueId: ID!) {
                 node(id: $projectId) {
                   ... on ProjectV2 {
                     items(first: 100) {
                       nodes {
                         id
                         content {
-                          ... on Issue { id }
+                          __typename
+                          ... on Issue {
+                            id
+                          }
                         }
                       }
                     }
@@ -84,8 +95,15 @@ jobs:
                 }
               }
             `;
-            const itemsData = await github.graphql(queryItems, { projectId: projectId });
-            const item = itemsData.node.items.nodes.find(i => i.content && i.content.id === issueNodeId);
+
+            const itemsData = await github.graphql(queryItem, { 
+              projectId: projectId, 
+              issueId: issueNodeId 
+            });
+
+            const item = itemsData.node.items.nodes.find(
+              i => i.content && i.content.id === issueNodeId
+            );
 
             if (!item) {
               core.setFailed("⚠️ No se encontró el issue en el proyecto.");
@@ -107,6 +125,7 @@ jobs:
                 }
               }
             `;
+
             await github.graphql(mutation, {
               projectId: projectId,
               itemId: item.id,
