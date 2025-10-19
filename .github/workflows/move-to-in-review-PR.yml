@@ -1,0 +1,206 @@
+name: Move Issue to Review
+
+on:
+  pull_request:
+    types: [opened, reopened, ready_for_review]
+
+jobs:
+  move-to-review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extract issue numbers from PR
+        id: extract
+        run: |
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          PR_BODY="${{ github.event.pull_request.body }}"
+          PR_BRANCH="${{ github.event.pull_request.head.ref }}"
+          
+          # Buscar todos los issues mencionados con Closes, Fixes, Resolves
+          ISSUES=$(echo "$PR_TITLE $PR_BODY" | grep -oiE '(close[sd]?|fix(e[sd])?|resolve[sd]?) #[0-9]+' | grep -oE '[0-9]+' | sort -u)
+          
+          # Si no encuentra, buscar en el nombre de la rama
+          if [ -z "$ISSUES" ]; then
+            ISSUES=$(echo "$PR_BRANCH" | grep -oE '#[0-9]+' | tr -d '#')
+          fi
+          
+          # Si aún no encuentra, buscar cualquier número
+          if [ -z "$ISSUES" ]; then
+            ISSUES=$(echo "$PR_BRANCH" | grep -oE '[0-9]+' | head -1)
+          fi
+          
+          # Convertir a JSON array
+          if [ -n "$ISSUES" ]; then
+            ISSUES_JSON=$(echo "$ISSUES" | jq -R -s -c 'split("\n") | map(select(length > 0) | tonumber)')
+            echo "issues=$ISSUES_JSON" >> $GITHUB_OUTPUT
+            echo "✅ Issues detectados: $ISSUES_JSON"
+          else
+            echo "issues=[]" >> $GITHUB_OUTPUT
+            echo "⚠️ No se detectaron issues"
+          fi
+          
+      - name: Move issues to Review
+        if: steps.extract.outputs.issues != '[]'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GH_TOKEN }}
+          script: |
+            const issueNumbers = ${{ steps.extract.outputs.issues }};
+            const projectNumber = 44;
+            const organization = "puj-course";
+            const targetStatus = "In review";
+
+            console.log(`🎯 Procesando ${issueNumbers.length} issue(s) del PR #${context.payload.pull_request.number}`);
+
+            // ==============================
+            // 1️⃣ Obtener ID del proyecto y campos
+            // ==============================
+            const queryProject = `
+              query($org: String!, $number: Int!) {
+                organization(login: $org) {
+                  projectV2(number: $number) {
+                    id
+                    title
+                    fields(first: 50) {
+                      nodes {
+                        __typename
+                        ... on ProjectV2Field {
+                          id
+                          name
+                        }
+                        ... on ProjectV2SingleSelectField {
+                          id
+                          name
+                          options {
+                            id
+                            name
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            `;
+
+            let projectData;
+            try {
+              projectData = await github.graphql(queryProject, { 
+                org: organization, 
+                number: projectNumber 
+              });
+            } catch (error) {
+              core.setFailed(`❌ Error al obtener el proyecto: ${error.message}`);
+              return;
+            }
+            
+            const project = projectData.organization.projectV2;
+            
+            if (!project) {
+              core.setFailed("❌ No se pudo encontrar el proyecto.");
+              return;
+            }
+            
+            const projectId = project.id;
+            console.log(`✅ Proyecto encontrado: ${project.title}`);
+
+            // Buscar el campo Status
+            const statusField = project.fields.nodes.find(
+              f => f.name === "Status" && f.__typename === "ProjectV2SingleSelectField"
+            );
+
+            if (!statusField) {
+              core.setFailed("❌ Campo 'Status' no encontrado.");
+              return;
+            }
+
+            const reviewOption = statusField.options.find(o => o.name === targetStatus);
+            if (!reviewOption) {
+              core.setFailed(`❌ Opción '${targetStatus}' no encontrada.`);
+              console.log("Opciones disponibles:", statusField.options.map(o => o.name));
+              return;
+            }
+
+            // ==============================
+            // 2️⃣ Obtener todos los items del proyecto
+            // ==============================
+            const queryItems = `
+              query($projectId: ID!) {
+                node(id: $projectId) {
+                  ... on ProjectV2 {
+                    items(first: 100) {
+                      nodes {
+                        id
+                        content {
+                          __typename
+                          ... on Issue {
+                            id
+                            number
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            `;
+
+            const itemsData = await github.graphql(queryItems, { projectId });
+            const projectItems = itemsData.node.items.nodes;
+
+            // ==============================
+            // 3️⃣ Procesar cada issue
+            // ==============================
+            for (const issueNumber of issueNumbers) {
+              try {
+                console.log(`\n📝 Procesando issue #${issueNumber}...`);
+                
+                // Obtener el node_id del issue
+                const issueData = await github.rest.issues.get({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issueNumber
+                });
+                
+                const issueNodeId = issueData.data.node_id;
+
+                // Buscar el item en el proyecto
+                const item = projectItems.find(
+                  i => i.content && i.content.id === issueNodeId
+                );
+
+                if (!item) {
+                  console.log(`⚠️ Issue #${issueNumber} no está en el proyecto.`);
+                  continue;
+                }
+
+                // Actualizar el estado a "In review"
+                const mutation = `
+                  mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) {
+                    updateProjectV2ItemFieldValue(input: {
+                      projectId: $projectId
+                      itemId: $itemId
+                      fieldId: $fieldId
+                      value: { singleSelectOptionId: $optionId }
+                    }) {
+                      projectV2Item {
+                        id
+                      }
+                    }
+                  }
+                `;
+
+                await github.graphql(mutation, {
+                  projectId: projectId,
+                  itemId: item.id,
+                  fieldId: statusField.id,
+                  optionId: reviewOption.id
+                });
+
+                console.log(`✅ Issue #${issueNumber} movido a '${targetStatus}'`);
+                
+              } catch (error) {
+                console.log(`❌ Error procesando issue #${issueNumber}: ${error.message}`);
+              }
+            }
+            
+            console.log(`\n🎉 Proceso completado. Issues movidos a '${targetStatus}'.`);
