@@ -128,13 +128,17 @@ jobs:
             const issueNodeId = issueData.data.node_id;
 
             // ==============================
-            // 3️⃣ Buscar el item en el proyecto
+            // 3️⃣ Buscar el item en el proyecto (con paginación)
             // ==============================
             const queryItem = `
-              query($projectId: ID!) {
+              query($projectId: ID!, $cursor: String) {
                 node(id: $projectId) {
                   ... on ProjectV2 {
-                    items(first: 100) {
+                    items(first: 100, after: $cursor) {
+                      pageInfo {
+                        hasNextPage
+                        endCursor
+                      }
                       nodes {
                         id
                         content {
@@ -151,16 +155,106 @@ jobs:
               }
             `;
 
-            const itemsData = await github.graphql(queryItem, { projectId });
+            let projectItems = [];
+            let hasNextPage = true;
+            let cursor = null;
 
-            const item = itemsData.node.items.nodes.find(
+            // Obtener todos los items con paginación
+            while (hasNextPage) {
+              const itemsData = await github.graphql(queryItem, { projectId, cursor });
+              const items = itemsData.node.items;
+              projectItems.push(...items.nodes);
+              hasNextPage = items.pageInfo.hasNextPage;
+              cursor = items.pageInfo.endCursor;
+            }
+
+            console.log(`📊 Total de items en el proyecto: ${projectItems.length}`);
+
+            const item = projectItems.find(
               i => i.content && i.content.id === issueNodeId
             );
 
             if (!item) {
               console.log(`⚠️ Issue #${issueNumber} no está en el proyecto.`);
-              console.log("El issue debe estar agregado al tablero para poder moverlo.");
-              return;
+              console.log(`📋 Intentando agregarlo automáticamente...`);
+              
+              try {
+                // Agregar el issue al proyecto
+                const addItemMutation = `
+                  mutation($projectId: ID!, $contentId: ID!) {
+                    addProjectV2ItemById(input: {
+                      projectId: $projectId
+                      contentId: $contentId
+                    }) {
+                      item {
+                        id
+                      }
+                    }
+                  }
+                `;
+                
+                const addResult = await github.graphql(addItemMutation, {
+                  projectId: projectId,
+                  contentId: issueNodeId
+                });
+                
+                const newItem = addResult.addProjectV2ItemById.item;
+                console.log(`✅ Issue #${issueNumber} agregado al proyecto.`);
+                
+                // Actualizar el estado a Done
+                const mutation = `
+                  mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) {
+                    updateProjectV2ItemFieldValue(input: {
+                      projectId: $projectId
+                      itemId: $itemId
+                      fieldId: $fieldId
+                      value: { singleSelectOptionId: $optionId }
+                    }) {
+                      projectV2Item {
+                        id
+                      }
+                    }
+                  }
+                `;
+
+                await github.graphql(mutation, {
+                  projectId: projectId,
+                  itemId: newItem.id,
+                  fieldId: statusField.id,
+                  optionId: doneOption.id
+                });
+
+                console.log(`✅ Issue #${issueNumber} movido a '${targetStatus}' tras merge del PR!`);
+                
+                // Cerrar el issue si está abierto
+                try {
+                  const currentIssue = await github.rest.issues.get({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: issueNumber
+                  });
+                  
+                  if (currentIssue.data.state === 'open') {
+                    await github.rest.issues.update({
+                      owner: context.repo.owner,
+                      repo: context.repo.repo,
+                      issue_number: issueNumber,
+                      state: 'closed',
+                      state_reason: 'completed'
+                    });
+                    console.log(`✅ Issue #${issueNumber} cerrado automáticamente.`);
+                  } else {
+                    console.log(`ℹ️ Issue #${issueNumber} ya estaba cerrado.`);
+                  }
+                } catch (closeError) {
+                  console.log(`⚠️ No se pudo cerrar el issue: ${closeError.message}`);
+                }
+                return;
+                
+              } catch (addError) {
+                console.log(`❌ No se pudo agregar el issue al proyecto: ${addError.message}`);
+                return;
+              }
             }
 
             // ==============================
@@ -190,12 +284,27 @@ jobs:
 
             console.log(`✅ Issue #${issueNumber} movido a '${targetStatus}' tras merge del PR!`);
             
-            // Opcional: Cerrar el issue automáticamente
-            await github.rest.issues.update({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: issueNumber,
-              state: 'closed'
-            });
-            
-            console.log(`✅ Issue #${issueNumber} cerrado automáticamente.`);
+            // Opcional: Cerrar el issue automáticamente si está abierto
+            try {
+              const currentIssue = await github.rest.issues.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issueNumber
+              });
+              
+              if (currentIssue.data.state === 'open') {
+                await github.rest.issues.update({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issueNumber,
+                  state: 'closed',
+                  state_reason: 'completed'
+                });
+                console.log(`✅ Issue #${issueNumber} cerrado automáticamente.`);
+              } else {
+                console.log(`ℹ️ Issue #${issueNumber} ya estaba cerrado.`);
+              }
+            } catch (closeError) {
+              console.log(`⚠️ No se pudo cerrar el issue #${issueNumber}: ${closeError.message}`);
+              console.log(`El issue se movió a Done pero permanece abierto.`);
+            }
