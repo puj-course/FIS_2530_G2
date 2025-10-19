@@ -1,0 +1,64 @@
+name: Java CI with Maven (enhanced)
+
+on:
+  push:
+    branches: ["database" ]
+  pull_request:
+    branches: ["database" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: maven
+
+      - name: Build and run tests
+        run:  mvn -B clean package -f src/test/SIS/pom.xml
+
+      - name: Upload JAR artifact
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-jar
+          path: target/*.jar
+
+      - name: Upload test reports (Surefire)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports
+          path: target/surefire-reports/**
+
+      # - name: Update dependency graph
+       # if: success()
+        # uses: advanced-security/maven-dependency-submission-action@v4
+        # o mantén la versión que tenías si esta acción no tiene release v4
+
+  ai-review:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && contains(github.head_ref, 'grupo#')
+    steps:
+      - name: Checkout PR
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate diff
+        run: git --no-pager diff --name-only origin/${{ github.base_ref }}...${{ github.head_ref }} > changed_files.txt
+
+      - name: IA - Sugerir pruebas a ejecutar (conceptual)
+        run: |
+          echo "Archivos modificados detectados:"
+          cat changed_files.txt
+          echo "La IA analizó estos cambios y sugirió ejecutar pruebas relacionadas con los módulos afectados."
