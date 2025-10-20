@@ -54,9 +54,17 @@ jobs:
         uses: dorny/test-reporter@v1
         with:
           name: Test Results (${{ matrix.os }})
-          path: 'src/test/SIS/target/surefire-reports/TEST-*.xml'
+          path: '**/target/surefire-reports/TEST-*.xml'
+          # 'src/test/SIS/target/surefire-reports/TEST-*.xml'
           reporter: java-junit
           fail-on-error: false
+          
+        - name: 🕵️ Inspect surefire directory
+        if: always()
+        run: |
+          echo "Listing surefire-reports directory:"
+          ls -R src/test/SIS/target/surefire-reports || echo "No surefire reports found"
+
 
       - name: 📦 Package application
         run: mvn package -DskipTests
