@@ -58,7 +58,7 @@ jobs:
           reporter: java-junit
           fail-on-error: false
           
-        - name: 🕵️ Inspect surefire directory
+      - name: 🕵️ Inspect surefire directory
         if: always()
         run: |
           echo "Listing surefire-reports directory:"
