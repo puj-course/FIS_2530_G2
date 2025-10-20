@@ -40,7 +40,7 @@ jobs:
           echo "JavaFX will be managed by Maven dependencies"
 
       - name: 📦 Cache Maven packages
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
