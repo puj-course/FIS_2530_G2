@@ -2,8 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/FIS_2530_G2.iml" filepath="$PROJECT_DIR$/.idea/FIS_2530_G2.iml" />
-      <module fileurl="file://$PROJECT_DIR$/src/test/SIS/SIS.iml" filepath="$PROJECT_DIR$/src/test/SIS/SIS.iml" />
+      <module fileurl="file://$PROJECT_DIR$/SIS.iml" filepath="$PROJECT_DIR$/SIS.iml" />
     </modules>
   </component>
 </project>
