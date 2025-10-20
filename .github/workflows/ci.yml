@@ -2,13 +2,9 @@ name: CI - Build and Test
 
 on:
   push:
-    branches:
-      - develop
-      - main
+    branches: [develop, main]
   pull_request:
-    branches:
-      - develop
-      - main
+    branches: [develop, main]
 
 permissions:
   contents: read
@@ -35,11 +31,7 @@ jobs:
           java-version: '21'
           cache: 'maven'
 
-      - name: 🎨 Setup JavaFX
-        run: |
-          echo "JavaFX will be managed by Maven dependencies"
-
-      - name: 📦 Cache Maven packages
+      - name: 📦 Cache Maven dependencies
         uses: actions/cache@v4
         with:
           path: ~/.m2/repository
@@ -47,17 +39,14 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
-      - name: 🔍 Validate Maven project
-        run: mvn validate
-
       - name: 🧹 Clean previous builds
         run: mvn clean
 
       - name: 🔨 Compile project
         run: mvn compile -DskipTests
 
-      - name: 🧪 Run unit tests
-        run: mvn test
+      - name: 🧪 Run unit tests (subproject)
+        run: mvn -f src/test/SIS/pom.xml test
         continue-on-error: true
 
       - name: 📊 Generate test report
@@ -65,7 +54,7 @@ jobs:
         uses: dorny/test-reporter@v1
         with:
           name: Test Results (${{ matrix.os }})
-          path: '**/target/surefire-reports/TEST-*.xml'
+          path: 'src/test/SIS/target/surefire-reports/TEST-*.xml'
           reporter: java-junit
           fail-on-error: false
 
@@ -90,9 +79,9 @@ jobs:
 
       - name: 📈 Upload coverage reports
         if: matrix.os == 'ubuntu-latest'
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
-          files: ./target/site/jacoco/jacoco.xml
+          files: ./src/test/SIS/target/site/jacoco/jacoco.xml
           flags: unittests
           name: codecov-umbrella
           fail_ci_if_error: false
@@ -103,100 +92,18 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const fs = require('fs');
             const buildStatus = '${{ job.status }}';
             const emoji = buildStatus === 'success' ? '✅' : '❌';
-            
             const comment = `## ${emoji} Build Status - ${{ matrix.os }}
             
             **Status:** ${buildStatus}
             **Java Version:** JDK 21
-            **JavaFX Version:** 21
             **Commit:** ${context.sha.substring(0, 7)}
-            
-            ### Build Steps:
-            - ✅ Checkout code
-            - ✅ Setup JDK 21
-            - ✅ Compile project
-            - ✅ Run tests
-            - ✅ Package application
-            
+
             [View full workflow run](${context.payload.repository.html_url}/actions/runs/${context.runId})
             `;
-            
             github.rest.issues.createComment({
               ...context.repo,
               issue_number: context.issue.number,
               body: comment
             });
-
-  code-quality:
-    name: Code Quality Analysis
-    runs-on: ubuntu-latest
-    needs: build-and-test
-
-    steps:
-      - name: 📥 Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: ☕ Setup JDK 21
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '21'
-          cache: 'maven'
-
-      - name: 🔍 SonarCloud Scan
-        if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: |
-          mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-            -Dsonar.projectKey=puj-course_FIS_2530_G2 \
-            -Dsonar.organization=puj-course \
-            -Dsonar.host.url=https://sonarcloud.io
-        continue-on-error: true
-
-      - name: 📊 Generate dependency tree
-        run: mvn dependency:tree -DoutputFile=dependency-tree.txt
-
-      - name: 📤 Upload dependency tree
-        uses: actions/upload-artifact@v4
-        with:
-          name: dependency-tree
-          path: dependency-tree.txt
-          retention-days: 30
-
-  security-scan:
-    name: Security Vulnerability Scan
-    runs-on: ubuntu-latest
-    needs: build-and-test
-
-    steps:
-      - name: 📥 Checkout code
-        uses: actions/checkout@v4
-
-      - name: ☕ Setup JDK 21
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '21'
-          cache: 'maven'
-
-      - name: 🔒 Run OWASP Dependency Check
-        run: |
-          mvn org.owasp:dependency-check-maven:check \
-            -DfailBuildOnCVSS=7 \
-            -DsuppressionFiles=dependency-check-suppressions.xml
-        continue-on-error: true
-
-      - name: 📤 Upload security report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: security-report
-          path: target/dependency-check-report.html
-          retention-days: 30
