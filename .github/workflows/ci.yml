@@ -55,7 +55,6 @@ jobs:
         with:
           name: Test Results (${{ matrix.os }})
           path: '**/target/surefire-reports/TEST-*.xml'
-          # 'src/test/SIS/target/surefire-reports/TEST-*.xml'
           reporter: java-junit
           fail-on-error: false
           
