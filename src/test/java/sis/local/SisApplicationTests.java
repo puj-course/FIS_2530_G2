@@ -1,33 +1,19 @@
-/*
 package sis.local;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
-
-@Import(TestcontainersConfiguration.class)
-@SpringBootTest
-class SisApplicationTests {
-
-	@Test
-	void contextLoads() {
-	}
-
-}
-
-ORIGINAL VERSION, REPLACED BC BOTH WINDOWS RUNNER AND MACOS RUNNER DO NOT HAVE DOCKER AS DEFAULT
-*/
-
-package sis.local;
-
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.context.annotation.Import;
 
 @Import(TestcontainersConfiguration.class)
-@SpringBootTest
+@SpringBootTest(classes = com.sis.Main.main.class) // le decimos al springboot que la clase de arranque
+// no es esta, sino el "Main.main"
+
+/*
+Springboot por defecto busca SisApplication, 
+como nuestros tests unitarios buscan esa clase, no se encuentra
+
+*/
 @ActiveProfiles(resolver = SisApplicationTests.ProfileResolver.class)
 class SisApplicationTests {
 
