@@ -1,28 +1,63 @@
 package com.sis.Model;
 
+import jakarta.persistence.*;
 import com.sis.Model.Enum.TipoDoc;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+@Entity
+@Table(name = "usuarios")
+@Inheritance(strategy = InheritanceType.JOINED)
 public class Usuario {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(columnDefinition = "uuid")
     private UUID id;
+
+    @Column(unique = true, nullable = false, length = 50)
     private String username;
+
+    @Column(nullable = false)
     private String hash;
+
+    @Column(nullable = false, length = 100)
     private String nombres;
+
+    @Column(nullable = false, length = 100)
     private String apellidos;
+
+    @Column(length = 100)
     private String email;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tipo_documento", nullable = false)
     private TipoDoc tipoDocumento;
+
+    @Column(name = "numero_documento", unique = true, nullable = false, length = 20)
     private String numeroDocumento;
+
+    @Column(length = 200)
     private String direccion;
-    private boolean activo;
+
+    @Column(nullable = false)
+    private boolean activo = true;
+
+    @Column(name = "creado_en", nullable = false, updatable = false)
     private LocalDateTime creadoEn;
 
-    public Usuario() {
-        this.id = UUID.randomUUID();
-        this.activo = true;
-        this.creadoEn = LocalDateTime.now();
+    @PrePersist
+    protected void onCreate() {
+        if (creadoEn == null) {
+            creadoEn = LocalDateTime.now();
+        }
     }
 
+    // Constructor
+    public Usuario() {
+    }
+
+    // Getters y Setters
     public UUID getId() {
         return id;
     }

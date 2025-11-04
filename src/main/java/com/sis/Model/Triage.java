@@ -1,25 +1,57 @@
 package com.sis.Model;
 
 import com.sis.Model.Enum.NivelTriage;
-import java.util.UUID;
-import java.time.LocalDateTime;
+import jakarta.persistence.*;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.UUID;
 
+@Entity
+@Table(name = "triages")
 public class Triage {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(columnDefinition = "uuid")
     private UUID id;
-    private UUID ticketId;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ticket_id", nullable = false, unique = true)
+    private TicketAdmision ticket;
+
+    @Column(columnDefinition = "TEXT")
     private String sintomas;
+
+    @Column(name = "temperatura_c", precision = 4, scale = 2)
     private BigDecimal temperaturaC;
-    private int frecuenciaCardiaca;
-    private int presionSistolica;
-    private int presionDiastolica;
-    private int saturacionO2;
+
+    @Column(name = "frecuencia_cardiaca")
+    private Integer frecuenciaCardiaca;
+
+    @Column(name = "presion_sistolica")
+    private Integer presionSistolica;
+
+    @Column(name = "presion_diastolica")
+    private Integer presionDiastolica;
+
+    @Column(name = "saturacion_o2")
+    private Integer saturacionO2;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private NivelTriage prioridad;
+
+    @Column(name = "registrado_en", nullable = false, updatable = false)
     private LocalDateTime registradoEn;
 
+    @PrePersist
+    protected void onCreate() {
+        if (registradoEn == null) {
+            registradoEn = LocalDateTime.now();
+        }
+    }
+
     public Triage() {
-        this.id = UUID.randomUUID();
-        this.registradoEn = LocalDateTime.now();
     }
 
     public UUID getId() {
@@ -30,12 +62,12 @@ public class Triage {
         this.id = id;
     }
 
-    public UUID getTicketId() {
-        return ticketId;
+    public TicketAdmision getTicket() {
+        return ticket;
     }
 
-    public void setTicketId(UUID ticketId) {
-        this.ticketId = ticketId;
+    public void setTicket(TicketAdmision ticket) {
+        this.ticket = ticket;
     }
 
     public String getSintomas() {
@@ -54,35 +86,35 @@ public class Triage {
         this.temperaturaC = temperaturaC;
     }
 
-    public int getFrecuenciaCardiaca() {
+    public Integer getFrecuenciaCardiaca() {
         return frecuenciaCardiaca;
     }
 
-    public void setFrecuenciaCardiaca(int frecuenciaCardiaca) {
+    public void setFrecuenciaCardiaca(Integer frecuenciaCardiaca) {
         this.frecuenciaCardiaca = frecuenciaCardiaca;
     }
 
-    public int getPresionSistolica() {
+    public Integer getPresionSistolica() {
         return presionSistolica;
     }
 
-    public void setPresionSistolica(int presionSistolica) {
+    public void setPresionSistolica(Integer presionSistolica) {
         this.presionSistolica = presionSistolica;
     }
 
-    public int getPresionDiastolica() {
+    public Integer getPresionDiastolica() {
         return presionDiastolica;
     }
 
-    public void setPresionDiastolica(int presionDiastolica) {
+    public void setPresionDiastolica(Integer presionDiastolica) {
         this.presionDiastolica = presionDiastolica;
     }
 
-    public int getSaturacionO2() {
+    public Integer getSaturacionO2() {
         return saturacionO2;
     }
 
-    public void setSaturacionO2(int saturacionO2) {
+    public void setSaturacionO2(Integer saturacionO2) {
         this.saturacionO2 = saturacionO2;
     }
 
@@ -103,12 +135,17 @@ public class Triage {
     }
 
     public void calcularPrioridad() {
-        if (temperaturaC.compareTo(new BigDecimal("39.5")) > 0 || saturacionO2 < 90 || presionSistolica > 180) {
-            this.prioridad = NivelTriage.NIVEL_2_EMERGENCIA;
-        } else if (temperaturaC.compareTo(new BigDecimal("38.5")) > 0 || saturacionO2 < 94) {
-            this.prioridad = NivelTriage.NIVEL_3_URGENTE;
-        } else {
-            this.prioridad = NivelTriage.NIVEL_4_MENOS_URGENTE;
+        if (temperaturaC != null && saturacionO2 != null && presionSistolica != null) {
+            if (temperaturaC.compareTo(new BigDecimal("39.5")) > 0 ||
+                    saturacionO2 < 90 ||
+                    presionSistolica > 180) {
+                this.prioridad = NivelTriage.NIVEL_2_EMERGENCIA;
+            } else if (temperaturaC.compareTo(new BigDecimal("38.5")) > 0 ||
+                    saturacionO2 < 94) {
+                this.prioridad = NivelTriage.NIVEL_3_URGENTE;
+            } else {
+                this.prioridad = NivelTriage.NIVEL_4_MENOS_URGENTE;
+            }
         }
     }
 }
