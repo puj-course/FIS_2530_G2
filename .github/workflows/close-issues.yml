@@ -3,7 +3,8 @@ name: Cerrar issues desde commits
 on:
   push:
     branches:
-      - develop
+      # - develop
+      - '*'
 
 permissions:
   issues: write
