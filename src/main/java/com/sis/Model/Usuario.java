@@ -4,7 +4,10 @@ import com.sis.Model.Enum.TipoDoc;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+@Component
+@Entity
 public class Usuario {
+    @Id
     private UUID id;
     private String username;
     private String hash;
