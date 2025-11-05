@@ -14,6 +14,7 @@ import java.util.UUID;
 @Inheritance(strategy = InheritanceType.JOINED)
 public class Usuario {
 
+    @jakarta.persistence.Id
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(columnDefinition = "uuid")
