@@ -1,8 +1,14 @@
 package com.sis.Model;
 
 import com.sis.Model.Enum.NivelEnfermera;
+import jakarta.persistence.*;
 
-public class Enfermera extends Usuario{
+@Entity
+@Table(name = "enfermeras")
+public class Enfermera extends Usuario {
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "nivel")
     private NivelEnfermera nivel;
 
     public Enfermera() {

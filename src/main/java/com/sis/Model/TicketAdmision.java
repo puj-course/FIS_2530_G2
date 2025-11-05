@@ -1,20 +1,42 @@
 package com.sis.Model;
 
 import com.sis.Model.Enum.EstadoTicket;
-import java.util.UUID;
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
+@Entity
+@Table(name = "tickets_admision")
 public class TicketAdmision {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(columnDefinition = "uuid")
     private UUID id;
-    private UUID pacienteId;
-    private UUID enfermeraId;
-    private EstadoTicket estado;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "paciente_id", nullable = false)
+    private Paciente paciente;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "enfermera_id")
+    private Enfermera enfermera;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private EstadoTicket estado = EstadoTicket.PENDIENTE;
+
+    @Column(name = "creado_en", nullable = false, updatable = false)
     private LocalDateTime creadoEn;
 
+    @PrePersist
+    protected void onCreate() {
+        if (creadoEn == null) {
+            creadoEn = LocalDateTime.now();
+        }
+    }
+
     public TicketAdmision() {
-        this.id = UUID.randomUUID();
-        this.estado = EstadoTicket.PENDIENTE;
-        this.creadoEn = LocalDateTime.now();
     }
 
     public UUID getId() {
@@ -25,20 +47,20 @@ public class TicketAdmision {
         this.id = id;
     }
 
-    public UUID getPacienteId() {
-        return pacienteId;
+    public Paciente getPaciente() {
+        return paciente;
     }
 
-    public void setPacienteId(UUID pacienteId) {
-        this.pacienteId = pacienteId;
+    public void setPaciente(Paciente paciente) {
+        this.paciente = paciente;
     }
 
-    public UUID getEnfermeraId() {
-        return enfermeraId;
+    public Enfermera getEnfermera() {
+        return enfermera;
     }
 
-    public void setEnfermeraId(UUID enfermeraId) {
-        this.enfermeraId = enfermeraId;
+    public void setEnfermera(Enfermera enfermera) {
+        this.enfermera = enfermera;
     }
 
     public EstadoTicket getEstado() {

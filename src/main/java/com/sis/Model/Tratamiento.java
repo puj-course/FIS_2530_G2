@@ -1,17 +1,36 @@
 package com.sis.Model;
 
-import java.util.UUID;
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
+@Entity
+@Table(name = "tratamientos")
 public class Tratamiento {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(columnDefinition = "uuid")
     private UUID id;
-    private UUID diagnosticoId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "diagnostico_id", nullable = false)
+    private Diagnostico diagnostico;
+
+    @Column(columnDefinition = "TEXT")
     private String indicacion;
+
+    @Column(name = "creado_en", nullable = false, updatable = false)
     private LocalDateTime creadoEn;
 
+    @PrePersist
+    protected void onCreate() {
+        if (creadoEn == null) {
+            creadoEn = LocalDateTime.now();
+        }
+    }
+
     public Tratamiento() {
-        this.id = UUID.randomUUID();
-        this.creadoEn = LocalDateTime.now();
     }
 
     public UUID getId() {
@@ -22,12 +41,12 @@ public class Tratamiento {
         this.id = id;
     }
 
-    public UUID getDiagnosticoId() {
-        return diagnosticoId;
+    public Diagnostico getDiagnostico() {
+        return diagnostico;
     }
 
-    public void setDiagnosticoId(UUID diagnosticoId) {
-        this.diagnosticoId = diagnosticoId;
+    public void setDiagnostico(Diagnostico diagnostico) {
+        this.diagnostico = diagnostico;
     }
 
     public String getIndicacion() {

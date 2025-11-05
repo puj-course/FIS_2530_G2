@@ -1,6 +1,11 @@
 package com.sis.Model;
 
-public class Admin extends Usuario{
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "admins")
+public class Admin extends Usuario {
+
     public Admin() {
         super();
     }

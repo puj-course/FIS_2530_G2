@@ -1,21 +1,49 @@
 package com.sis.Model;
 
-import java.util.UUID;
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
+@Entity
+@Table(name = "diagnosticos_medicamentos")
 public class DiagnosticoMedicamento {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(columnDefinition = "uuid")
     private UUID id;
-    private UUID diagnosticoId;
-    private UUID medicamentoId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "diagnostico_id", nullable = false)
+    private Diagnostico diagnostico;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "medicamento_id", nullable = false)
+    private Medicamento medicamento;
+
+    @Column(length = 100)
     private String dosis;
+
+    @Column(length = 100)
     private String frecuencia;
+
+    @Column(length = 100)
     private String duracion;
+
+    @Column(columnDefinition = "TEXT")
     private String indicaciones;
+
+    @Column(name = "creado_en", nullable = false, updatable = false)
     private LocalDateTime creadoEn;
 
+    @PrePersist
+    protected void onCreate() {
+        if (creadoEn == null) {
+            creadoEn = LocalDateTime.now();
+        }
+    }
+
     public DiagnosticoMedicamento() {
-        this.id = UUID.randomUUID();
-        this.creadoEn = LocalDateTime.now();
     }
 
     public UUID getId() {
@@ -26,20 +54,20 @@ public class DiagnosticoMedicamento {
         this.id = id;
     }
 
-    public UUID getDiagnosticoId() {
-        return diagnosticoId;
+    public Diagnostico getDiagnostico() {
+        return diagnostico;
     }
 
-    public void setDiagnosticoId(UUID diagnosticoId) {
-        this.diagnosticoId = diagnosticoId;
+    public void setDiagnostico(Diagnostico diagnostico) {
+        this.diagnostico = diagnostico;
     }
 
-    public UUID getMedicamentoId() {
-        return medicamentoId;
+    public Medicamento getMedicamento() {
+        return medicamento;
     }
 
-    public void setMedicamentoId(UUID medicamentoId) {
-        this.medicamentoId = medicamentoId;
+    public void setMedicamento(Medicamento medicamento) {
+        this.medicamento = medicamento;
     }
 
     public String getDosis() {
