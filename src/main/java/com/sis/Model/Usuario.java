@@ -2,6 +2,10 @@ package com.sis.Model;
 
 import jakarta.persistence.*;
 import com.sis.Model.Enum.TipoDoc;
+import jakarta.persistence.Entity;
+import org.springframework.data.annotation.Id;
+import org.springframework.stereotype.Component;
+
 import java.time.LocalDateTime;
 import java.util.UUID;
 
