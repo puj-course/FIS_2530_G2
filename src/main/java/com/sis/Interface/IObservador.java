@@ -1,5 +1,7 @@
 package com.sis.Interface;
 
+import com.sis.Model.Enum.TipoEvento;
+
 public interface IObservador {
-    void actualizar(String tipo, Object datos);
+    void actualizar(TipoEvento tipo, Object datos);
 }

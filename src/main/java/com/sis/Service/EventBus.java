@@ -1,6 +1,7 @@
 package com.sis.Service;
 
 import com.sis.Interface.IObservador;
+import com.sis.Model.Enum.TipoEvento;
 import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +25,7 @@ public class EventBus {
         observadores.remove(observador);
     }
 
-    public void publicar(String tipo, Object datos) {
+    public void publicar(TipoEvento tipo, Object datos) {
         for (IObservador observador : observadores) {
             try {
                 observador.actualizar(tipo, datos);
