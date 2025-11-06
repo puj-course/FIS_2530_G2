@@ -1,4 +1,5 @@
 package com.sis.Patterns.Prototype;
 
-public class IPrototype {
+public interface IPrototype<T> {
+    T clone();
 }
