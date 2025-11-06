@@ -1,10 +1,25 @@
-version: "3.8"
+version: '3.8'
 
 services:
+  SIS:
+    build: SIS                 # carpeta donde está tu Dockerfile y el JAR
+    container_name: sis_app
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: postgres
+      DB_URL: jdbc:postgresql://sis-db:5432/sis
+      DB_USER_NAME: postgres
+      DB_PASSWORD: tu_password
+    depends_on:
+      sis-db:
+        condition: service_healthy
+
   sis-db:
     image: postgres:16
     container_name: sis_db
-    restart: unless-stopped
+    restart: always
     ports:
       - "5432:5432"
     environment:
@@ -18,16 +33,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
-
-  SIS:
-    build: SIS              # ruta donde está tu Dockerfile y código
-    container_name: sis_app
-    restart: unless-stopped
-    ports:
-      - "8080:8080"
-    depends_on:
-      sis-db:
-        condition: service_healthy
 
 volumes:
   pgdata:
