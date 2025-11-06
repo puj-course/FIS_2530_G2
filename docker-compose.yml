@@ -15,6 +15,8 @@ services:
     depends_on:
       sis-db:
         condition: service_healthy
+    networks:
+      - sis-network
 
   sis-db:
     image: postgres:16
@@ -33,6 +35,12 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
+    networks:
+      - sis-network
 
 volumes:
   pgdata:
+
+networks:
+  sis-network:
+    driver: bridge
