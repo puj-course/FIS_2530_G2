@@ -19,6 +19,7 @@ public class UserService {
     public Usuario getUsuarioById(int id) {
         return userRepo.findById(id).orElse(new Usuario());
     }
+    // importante diferenciar si id se refiere a documento o al UUID, dependiendo de cual sea, especificar!!!!
 
     public void addUsuario(Usuario usr) {
         userRepo.save(usr);
