@@ -43,8 +43,6 @@ jobs:
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GH_TOKEN }}  # ← Usando tu token
 
       - name: ☕ Setup JDK 21
         uses: actions/setup-java@v4
@@ -59,46 +57,33 @@ jobs:
       - name: 🎨 Build native image (Linux)
         if: matrix.os == 'ubuntu-latest'
         run: |
-          mvn javafx:jlink || echo "⚠️ jlink not configured, skipping"
-          mvn jpackage:jpackage -Djpackage.type=deb || echo "⚠️ jpackage not configured, skipping"
+          mvn javafx:jlink
+          mvn jpackage:jpackage -Djpackage.type=deb
         continue-on-error: true
 
       - name: 🎨 Build native image (Windows)
         if: matrix.os == 'windows-latest'
         run: |
-          mvn javafx:jlink || echo "⚠️ jlink not configured, skipping"
-          mvn jpackage:jpackage -Djpackage.type=exe || echo "⚠️ jpackage not configured, skipping"
+          mvn javafx:jlink
+          mvn jpackage:jpackage -Djpackage.type=exe
         continue-on-error: true
 
       - name: 🎨 Build native image (macOS)
         if: matrix.os == 'macos-latest'
         run: |
-          mvn javafx:jlink || echo "⚠️ jlink not configured, skipping"
-          mvn jpackage:jpackage -Djpackage.type=dmg || echo "⚠️ jpackage not configured, skipping"
+          mvn javafx:jlink
+          mvn jpackage:jpackage -Djpackage.type=dmg
         continue-on-error: true
 
       - name: 📦 Prepare distribution
-        shell: bash
         run: |
           mkdir -p distribution
-          
-          # Copiar JARs
-          if ls target/*.jar 1> /dev/null 2>&1; then
-            cp target/*.jar distribution/ 2>/dev/null || true
-            echo "✅ JAR files copied"
-          fi
-          
-          # Copiar instaladores nativos (si existen)
-          cp target/*.exe distribution/ 2>/dev/null || true
-          cp target/*.deb distribution/ 2>/dev/null || true
-          cp target/*.dmg distribution/ 2>/dev/null || true
-          
-          # Copiar documentación
-          cp README.md distribution/ 2>/dev/null || echo "No README.md found"
-          cp LICENSE distribution/ 2>/dev/null || echo "No LICENSE found"
-          
-          echo "📂 Distribution contents:"
-          ls -lh distribution/
+          cp target/*.jar distribution/ || true
+          cp target/*.exe distribution/ || true
+          cp target/*.deb distribution/ || true
+          cp target/*.dmg distribution/ || true
+          cp README.md distribution/ || true
+          cp LICENSE distribution/ || true
 
       - name: 📤 Upload release artifacts
         uses: actions/upload-artifact@v4
@@ -106,7 +91,6 @@ jobs:
           name: release-${{ matrix.platform }}
           path: distribution/
           retention-days: 90
-          if-no-files-found: warn
 
   create-release:
     name: Create GitHub Release
@@ -117,9 +101,6 @@ jobs:
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GH_TOKEN }}  # ← Usando tu token
-          fetch-depth: 0  # Para git log completo
 
       - name: 📥 Download all artifacts
         uses: actions/download-artifact@v4
@@ -133,38 +114,38 @@ jobs:
           ## 🚀 Release ${GITHUB_REF#refs/tags/}
           
           ### 📦 What's New
-          - Spring Boot Application with JavaFX
-          - Built with JDK 21
+          - JavaFX Desktop Application
+          - Built with JDK 21 and JavaFX SDK 21
           - Multi-platform support (Windows, Linux, macOS)
           
           ### 📥 Downloads
           Choose the appropriate package for your platform:
           
-          **Windows:** \`.jar\` file (run with Java 21)
-          **Linux:** \`.jar\` file (run with Java 21)
-          **macOS:** \`.jar\` file (run with Java 21)
+          **Windows:** \`.exe\` installer
+          **Linux:** \`.deb\` package or \`.jar\` file
+          **macOS:** \`.dmg\` image or \`.jar\` file
           
           ### 🔧 Requirements
-          - Java 21 or later
+          - Java 21 or later (if using .jar files)
+          - Native packages include bundled JRE
           
           ### 📝 Changelog
-          $(git log --pretty=format:"- %s" $(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")..HEAD 2>/dev/null || echo "Initial release")
+          $(git log --pretty=format:"- %s" $(git describe --tags --abbrev=0 HEAD^)..HEAD)
           EOF
           
-          {
-            echo "notes<<EOF"
-            cat RELEASE_NOTES.md
-            echo "EOF"
-          } >> $GITHUB_OUTPUT
+          echo "notes<<EOF" >> $GITHUB_OUTPUT
+          cat RELEASE_NOTES.md >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
       - name: 🎉 Create GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v1
         with:
           files: artifacts/**/*
           body: ${{ steps.release_notes.outputs.notes }}
           draft: false
           prerelease: ${{ contains(github.ref, 'beta') || contains(github.ref, 'alpha') }}
-          token: ${{ secrets.GH_TOKEN }}  # ← Usando tu token
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
 
   deploy-staging:
     name: Deploy to Staging
@@ -176,11 +157,6 @@ jobs:
       url: https://staging.example.com
 
     steps:
-      - name: 📥 Checkout code
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GH_TOKEN }}  # ← Usando tu token
-
       - name: 📥 Download artifacts
         uses: actions/download-artifact@v4
         with:
@@ -190,8 +166,7 @@ jobs:
       - name: 🚀 Deploy to staging server
         run: |
           echo "Deploying to staging environment..."
-          echo "📦 Artifacts available:"
-          ls -lh release/
+          echo "Artifact: $(ls -lh release/)"
           # Aquí agregarías tu lógica de despliegue real
           # Ejemplo: scp, rsync, docker push, etc.
 
@@ -200,21 +175,19 @@ jobs:
           echo "Running smoke tests..."
           # Aquí agregarías pruebas de humo
           # curl -f https://staging.example.com/health || exit 1
-          echo "✅ Deployment verified"
 
       - name: 💬 Notify deployment
         uses: actions/github-script@v7
         with:
-          github-token: ${{ secrets.GH_TOKEN }}  # ← Usando tu token
+          github-token: ${{ secrets.GH_TOKEN }}
           script: |
             const commit = context.sha.substring(0, 7);
             const message = `🚀 **Staging Deployment Successful**\n\n` +
               `**Commit:** ${commit}\n` +
               `**Environment:** Staging\n` +
-              `**Time:** ${new Date().toISOString()}\n` +
-              `**Artifacts:** ${Object.keys(context.payload).length} files deployed`;
+              `**Time:** ${new Date().toISOString()}`;
             
-            await github.rest.repos.createCommitComment({
+            github.rest.repos.createCommitComment({
               ...context.repo,
               commit_sha: context.sha,
               body: message
@@ -230,11 +203,6 @@ jobs:
       url: https://app.example.com
 
     steps:
-      - name: 📥 Checkout code
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GH_TOKEN }}  # ← Usando tu token
-
       - name: 📥 Download artifacts
         uses: actions/download-artifact@v4
         with:
@@ -244,20 +212,14 @@ jobs:
       - name: 🔍 Pre-deployment checks
         run: |
           echo "Running pre-deployment checks..."
-          if ls release/*.jar 1> /dev/null 2>&1; then
-            echo "✅ JAR file found"
-            ls -lh release/*.jar
-          else
-            echo "❌ No JAR file found"
-            exit 1
-          fi
+          # Verificaciones antes de producción
+          test -f release/*.jar || exit 1
           echo "All checks passed!"
 
       - name: 🚀 Deploy to production
         run: |
           echo "Deploying to production environment..."
-          echo "📦 Artifacts:"
-          ls -lh release/
+          echo "Artifact: $(ls -lh release/)"
           # Aquí agregarías tu lógica de despliegue a producción
           # Ejemplo: Kubernetes, AWS, Azure, etc.
 
@@ -271,7 +233,7 @@ jobs:
       - name: 📊 Create deployment record
         uses: actions/github-script@v7
         with:
-          github-token: ${{ secrets.GH_TOKEN }}  # ← Usando tu token
+          github-token: ${{ secrets.GH_TOKEN }}
           script: |
             const tag = context.ref.replace('refs/tags/', '');
             const message = `🎉 **Production Deployment**\n\n` +
@@ -280,7 +242,7 @@ jobs:
               `**Deployed at:** ${new Date().toISOString()}\n` +
               `**Status:** ✅ Success`;
             
-            await github.rest.repos.createCommitComment({
+            github.rest.repos.createCommitComment({
               ...context.repo,
               commit_sha: context.sha,
               body: message
@@ -288,36 +250,23 @@ jobs:
 
       - name: 🔔 Notify team
         if: success()
-        uses: actions/github-script@v7
-        with:
-          github-token: ${{ secrets.GH_TOKEN }}  # ← Usando tu token
-          script: |
-            const tag = context.ref.replace('refs/tags/', '');
-            // Crear un issue de notificación para el equipo
-            await github.rest.issues.create({
-              ...context.repo,
-              title: `🎉 Production Release ${tag} Deployed`,
-              body: `## Production Deployment Successful\n\n` +
-                `**Version:** ${tag}\n` +
-                `**Deployed at:** ${new Date().toISOString()}\n` +
-                `**Commit:** ${context.sha}\n\n` +
-                `The application has been successfully deployed to production.\n` +
-                `Please verify that everything is working as expected.`,
-              labels: ['deployment', 'production', 'release']
-            });
+        run: |
+          echo "Sending notification to team..."
+          # Aquí podrías integrar Slack, Discord, Email, etc.
+          # curl -X POST -H 'Content-type: application/json' \
+          #   --data '{"text":"Production deployment successful!"}' \
+          #   ${{ secrets.SLACK_WEBHOOK_URL }}
 
   rollback:
+    permissions:
+      contents: write
+      issues: write   
     name: Rollback Deployment
     runs-on: ubuntu-latest
     if: failure() && (needs.deploy-staging.result == 'failure' || needs.deploy-production.result == 'failure')
     needs: [deploy-staging, deploy-production]
 
     steps:
-      - name: 📥 Checkout code
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GH_TOKEN }}  # ← Usando tu token
-
       - name: 🔄 Rollback to previous version
         run: |
           echo "Rolling back deployment..."
@@ -327,7 +276,7 @@ jobs:
       - name: 🚨 Create incident issue
         uses: actions/github-script@v7
         with:
-          github-token: ${{ secrets.GH_TOKEN }}  # ← Usando tu token
+          github-token: ${{ secrets.GH_TOKEN }}
           script: |
             await github.rest.issues.create({
               ...context.repo,
@@ -335,152 +284,8 @@ jobs:
               body: `## Deployment Failure\n\n` +
                 `**Workflow:** ${context.workflow}\n` +
                 `**Run ID:** ${context.runId}\n` +
-                `**Commit:** ${context.sha}\n` +
-                `**Failed Jobs:** ${needs.deploy-staging.result === 'failure' ? 'Staging' : ''} ` +
-                `${needs.deploy-production.result === 'failure' ? 'Production' : ''}\n\n` +
+                `**Commit:** ${context.sha}\n\n` +
                 `Automatic rollback has been initiated.\n` +
-                `Please investigate the failure immediately.\n\n` +
-                `[View workflow run](${context.payload.repository.html_url}/actions/runs/${context.runId})`,
-              labels: ['deployment', 'incident', 'high-priority'],
-              assignees: []  // Puedes agregar usuarios específicos aquí
+                `Please investigate the failure.`,
+              labels: ['deployment', 'incident', 'high-priority']
             });
-
-    name: Build Release Artifacts
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        include:
-          - os: ubuntu-latest
-            platform: linux
-            artifact: jar
-          - os: windows-latest
-            platform: windows
-            artifact: exe
-          - os: macos-latest
-            platform: macos
-            artifact: dmg
-
-    steps:
-      - name: 📥 Checkout code
-        uses: actions/checkout@v4
-
-      - name: ☕ Setup JDK 21
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '21'
-          cache: 'maven'
-
-      - name: 🔨 Build application
-        run: mvn clean package -DskipTests
-
-      - name: 🎨 Build JavaFX/Spring Boot native image (Linux)
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          echo "Building Linux distribution..."
-          # Si tienes jpackage configurado, descomenta:
-          # mvn javafx:jlink
-          # mvn jpackage:jpackage -Djpackage.type=deb
-        continue-on-error: true
-
-      - name: 🎨 Build native image (Windows)
-        if: matrix.os == 'windows-latest'
-        run: |
-          echo "Building Windows distribution..."
-          # Si tienes jpackage configurado, descomenta:
-          # mvn javafx:jlink
-          # mvn jpackage:jpackage -Djpackage.type=exe
-        continue-on-error: true
-
-      - name: 🎨 Build native image (macOS)
-        if: matrix.os == 'macos-latest'
-        run: |
-          echo "Building macOS distribution..."
-          # Si tienes jpackage configurado, descomenta:
-          # mvn javafx:jlink
-          # mvn jpackage:jpackage -Djpackage.type=dmg
-        continue-on-error: true
-
-      - name: 📦 Prepare distribution
-        shell: bash
-        run: |
-          mkdir -p distribution
-          
-          # Copiar JARs
-          if ls target/*.jar 1> /dev/null 2>&1; then
-            cp target/*.jar distribution/ 2>/dev/null || true
-            echo "✅ JAR files copied"
-          fi
-          
-          # Copiar instaladores nativos (si existen)
-          cp target/*.exe distribution/ 2>/dev/null || true
-          cp target/*.deb distribution/ 2>/dev/null || true
-          cp target/*.dmg distribution/ 2>/dev/null || true
-          
-          # Copiar documentación
-          cp README.md distribution/ 2>/dev/null || echo "No README.md found"
-          cp LICENSE distribution/ 2>/dev/null || echo "No LICENSE found"
-          
-          echo "📂 Distribution contents:"
-          ls -lh distribution/
-
-      - name: 📤 Upload release artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: release-${{ matrix.platform }}
-          path: distribution/
-          retention-days: 90
-          if-no-files-found: warn
-
-  create-release:
-    name: Create GitHub Release
-    runs-on: ubuntu-latest
-    needs: build-release
-    if: startsWith(github.ref, 'refs/tags/')
-
-    steps:
-      - name: 📥 Checkout code
-        uses: actions/checkout@v4
-
-      - name: 📥 Download all artifacts
-        uses: actions/download-artifact@v4  # ← ACTUALIZADO a v4
-        with:
-          path: artifacts/
-
-      - name: 📝 Generate release notes
-        id: release_notes
-        run: |
-          cat > RELEASE_NOTES.md << EOF
-          ## 🚀 Release ${GITHUB_REF#refs/tags/}
-          
-          ### 📦 What's New
-          - Spring Boot Application with JavaFX
-          - Built with JDK 21
-          - Multi-platform support (Windows, Linux, macOS)
-          
-          ### 📥 Downloads
-          Choose the appropriate package for your platform:
-          
-          **Windows:** \`.jar\` file (run with Java 21)
-          **Linux:** \`.jar\` file (run with Java 21)
-          **macOS:** \`.jar\` file (run with Java 21)
-          
-          ### 🔧 Requirements
-          - Java 21 or later
-          
-          ### 📝 Changelog
-          $(git log --pretty=format:"- %s" $(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")..HEAD 2>/dev/null || echo "Initial release")
-          EOF
-          
-          {
-            echo "notes<<EOF"
-            cat RELEASE_NOTES.md
-            echo "EOF"
-          } >> $GITHUB_OUTPUT
-
-      - name: 🎉 Create GitHub Release
-        uses: softprops/action-gh-release@v2  # ← ACTUALIZADO a v2
-        with:
-          files: artifacts/**/*
-          body: $
