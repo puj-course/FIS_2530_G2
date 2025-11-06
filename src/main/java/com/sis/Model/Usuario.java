@@ -1,6 +1,10 @@
 package com.sis.Model;
 
 import com.sis.Model.Enum.TipoDoc;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import org.apache.maven.plugins.annotations.Component;
+
 import java.time.LocalDateTime;
 import java.util.UUID;
 
