@@ -7,11 +7,9 @@ import org.apache.maven.plugins.annotations.Component;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import org.springframework.stereotype.Component;
 
-@Component
+
+
 @Entity
 public class Usuario {
     @Id

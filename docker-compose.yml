@@ -1,6 +1,8 @@
 services:
   sis-app:
-    build: sis                # carpeta donde está tu Dockerfile y el JAR
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: sis_app
     restart: always
     ports:
@@ -15,7 +17,7 @@ services:
         condition: service_healthy
 
   sis-db:
-    image: postgres:42.7.8
+    image: postgres:16
     container_name: sis_db
     restart: always
     ports:
