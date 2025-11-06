@@ -12,9 +12,9 @@
     </parent>
 
     <groupId>sis</groupId>
-    <artifactId>SIS</artifactId>
-    <version>0.0.1</version>
-    <name>SIS</name>
+    <artifactId>sistema_integrado_salud</artifactId>
+    <version>0.0.2</version>
+    <name>sistema_integrado_salud</name>
     <description>Sistema Integrado de Salud</description>
 
     <properties>

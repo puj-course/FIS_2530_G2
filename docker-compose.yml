@@ -1,8 +1,8 @@
 version: '3.8'
 
 services:
-  SIS:
-    build: SIS                 # carpeta donde está tu Dockerfile y el JAR
+  sis-app:
+    build: sistema_integrado_salud                 # carpeta donde está tu Dockerfile y el JAR
     container_name: sis_app
     restart: always
     ports:
@@ -11,7 +11,7 @@ services:
       SPRING_PROFILES_ACTIVE: postgres
       DB_URL: jdbc:postgresql://sis-db:5432/sis
       DB_USER_NAME: postgres
-      DB_PASSWORD: tu_password
+      DB_PASSWORD: 1234
     depends_on:
       sis-db:
         condition: service_healthy
@@ -25,13 +25,13 @@ services:
     environment:
       POSTGRES_DB: sis
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: tu_password
+      POSTGRES_PASSWORD: 1234
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d sis"]
       interval: 10s
-      timeout: 5s
+      timeout: 10s
       retries: 10
 
 volumes:

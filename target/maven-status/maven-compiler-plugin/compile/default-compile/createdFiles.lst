@@ -1,7 +1,0 @@
-com\sis\Controller\LoginController.class
-com\sis\Repo\UserRepo.class
-com\sis\Controller\UserController.class
-com\sis\Service\DBConnection.class
-com\sis\Main\main.class
-com\sis\Service\UserService.class
-com\sis\Model\Usuario.class
