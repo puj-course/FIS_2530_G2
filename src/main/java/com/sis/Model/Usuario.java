@@ -3,6 +3,9 @@ package com.sis.Model;
 import com.sis.Model.Enum.TipoDoc;
 import java.time.LocalDateTime;
 import java.util.UUID;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import org.springframework.stereotype.Component;
 
 @Component
 @Entity

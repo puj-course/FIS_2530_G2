@@ -11,10 +11,10 @@
         <relativePath/>
     </parent>
 
-    <groupId>sis</groupId>
-    <artifactId>SIS</artifactId>
+    <groupId>sistema_integrado_salud</groupId>
+    <artifactId>sis</artifactId>
     <version>0.0.1</version>
-    <name>SIS</name>
+    <name>sis</name>
     <description>Sistema Integrado de Salud</description>
 
     <properties>
@@ -53,6 +53,7 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
+            <version>42.7.8</version>
         </dependency>
 
         <dependency>
