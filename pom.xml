@@ -11,10 +11,11 @@
         <relativePath/>
     </parent>
 
-    <groupId>sis</groupId>
-    <artifactId>SIS</artifactId>
-    <version>1.0-SNAPSHOT</version>
-    <name>SIS</name>
+    <groupId>sistema_integrado_salud</groupId>
+    <artifactId>sis</artifactId>
+    <version>0.0.1</version>
+    <name>sis</name>
+    <description>Sistema Integrado de Salud</description>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -56,6 +57,12 @@
         </dependency>
 
         <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>42.7.8</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
@@ -85,6 +92,12 @@
             <groupId>org.mockito</groupId>
             <artifactId>mockito-junit-jupiter</artifactId>
             <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-resources-plugin</artifactId>
+            <version>4.0.0-beta-1</version>
         </dependency>
     </dependencies>
 
