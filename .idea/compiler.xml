@@ -15,13 +15,17 @@
         <processorPath useClasspath="false">
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.40/lombok-1.18.40.jar" />
         </processorPath>
-        <module name="SIS" />
+        <module name="sis" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="SIS" target="21" />
+    </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="SIS" options="-parameters" />
+      <module name="sis" options="-parameters" />
     </option>
   </component>
 </project>

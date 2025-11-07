@@ -1,0 +1,105 @@
+-------------------------------------------------------------------------------
+Test set: com.sis.Service.UserServiceTest
+-------------------------------------------------------------------------------
+Tests run: 6, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 0.246 s <<< FAILURE! -- in com.sis.Service.UserServiceTest
+com.sis.Service.UserServiceTest.cuandoUsuarioTieneCamposNulos_deberiaDetectarse -- Time elapsed: 0.011 s <<< FAILURE!
+org.opentest4j.MultipleFailuresError: 
+Verificar campos obligatorios (5 failures)
+	org.opentest4j.AssertionFailedError: Hash no debe ser nulo ==> expected: not <null>
+	org.opentest4j.AssertionFailedError: Nombres no debe ser nulo ==> expected: not <null>
+	org.opentest4j.AssertionFailedError: Apellidos no debe ser nulo ==> expected: not <null>
+	org.opentest4j.AssertionFailedError: Número de documento no debe ser nulo ==> expected: not <null>
+	org.opentest4j.AssertionFailedError: Tipo de documento no debe ser nulo ==> expected: not <null>
+	at org.junit.jupiter.api.AssertAll.assertAll(AssertAll.java:80)
+	at org.junit.jupiter.api.AssertAll.assertAll(AssertAll.java:44)
+	at org.junit.jupiter.api.Assertions.assertAll(Assertions.java:2961)
+	at com.sis.Service.UserServiceTest.cuandoUsuarioTieneCamposNulos_deberiaDetectarse(UserServiceTest.java:180)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+	Suppressed: org.opentest4j.AssertionFailedError: Hash no debe ser nulo ==> expected: not <null>
+		at org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:152)
+		at org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+		at org.junit.jupiter.api.AssertNotNull.failNull(AssertNotNull.java:49)
+		at org.junit.jupiter.api.AssertNotNull.assertNotNull(AssertNotNull.java:35)
+		at org.junit.jupiter.api.Assertions.assertNotNull(Assertions.java:312)
+		at com.sis.Service.UserServiceTest.lambda$cuandoUsuarioTieneCamposNulos_deberiaDetectarse$0(UserServiceTest.java:181)
+		at org.junit.jupiter.api.AssertAll.lambda$assertAll$0(AssertAll.java:68)
+		at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:214)
+		at java.base/java.util.Spliterators$ArraySpliterator.forEachRemaining(Spliterators.java:1024)
+		at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:570)
+		at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:560)
+		at java.base/java.util.stream.ReduceOps$ReduceOp.evaluateSequential(ReduceOps.java:921)
+		at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:265)
+		at java.base/java.util.stream.ReferencePipeline.collect(ReferencePipeline.java:723)
+		at org.junit.jupiter.api.AssertAll.assertAll(AssertAll.java:77)
+		... 6 more
+	Suppressed: org.opentest4j.AssertionFailedError: Nombres no debe ser nulo ==> expected: not <null>
+		at org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:152)
+		at org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+		at org.junit.jupiter.api.AssertNotNull.failNull(AssertNotNull.java:49)
+		at org.junit.jupiter.api.AssertNotNull.assertNotNull(AssertNotNull.java:35)
+		at org.junit.jupiter.api.Assertions.assertNotNull(Assertions.java:312)
+		at com.sis.Service.UserServiceTest.lambda$cuandoUsuarioTieneCamposNulos_deberiaDetectarse$1(UserServiceTest.java:182)
+		at org.junit.jupiter.api.AssertAll.lambda$assertAll$0(AssertAll.java:68)
+		at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:214)
+		at java.base/java.util.Spliterators$ArraySpliterator.forEachRemaining(Spliterators.java:1024)
+		at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:570)
+		at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:560)
+		at java.base/java.util.stream.ReduceOps$ReduceOp.evaluateSequential(ReduceOps.java:921)
+		at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:265)
+		at java.base/java.util.stream.ReferencePipeline.collect(ReferencePipeline.java:723)
+		at org.junit.jupiter.api.AssertAll.assertAll(AssertAll.java:77)
+		... 6 more
+	Suppressed: org.opentest4j.AssertionFailedError: Apellidos no debe ser nulo ==> expected: not <null>
+		at org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:152)
+		at org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+		at org.junit.jupiter.api.AssertNotNull.failNull(AssertNotNull.java:49)
+		at org.junit.jupiter.api.AssertNotNull.assertNotNull(AssertNotNull.java:35)
+		at org.junit.jupiter.api.Assertions.assertNotNull(Assertions.java:312)
+		at com.sis.Service.UserServiceTest.lambda$cuandoUsuarioTieneCamposNulos_deberiaDetectarse$2(UserServiceTest.java:183)
+		at org.junit.jupiter.api.AssertAll.lambda$assertAll$0(AssertAll.java:68)
+		at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:214)
+		at java.base/java.util.Spliterators$ArraySpliterator.forEachRemaining(Spliterators.java:1024)
+		at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:570)
+		at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:560)
+		at java.base/java.util.stream.ReduceOps$ReduceOp.evaluateSequential(ReduceOps.java:921)
+		at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:265)
+		at java.base/java.util.stream.ReferencePipeline.collect(ReferencePipeline.java:723)
+		at org.junit.jupiter.api.AssertAll.assertAll(AssertAll.java:77)
+		... 6 more
+	Suppressed: org.opentest4j.AssertionFailedError: Número de documento no debe ser nulo ==> expected: not <null>
+		at org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:152)
+		at org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+		at org.junit.jupiter.api.AssertNotNull.failNull(AssertNotNull.java:49)
+		at org.junit.jupiter.api.AssertNotNull.assertNotNull(AssertNotNull.java:35)
+		at org.junit.jupiter.api.Assertions.assertNotNull(Assertions.java:312)
+		at com.sis.Service.UserServiceTest.lambda$cuandoUsuarioTieneCamposNulos_deberiaDetectarse$3(UserServiceTest.java:184)
+		at org.junit.jupiter.api.AssertAll.lambda$assertAll$0(AssertAll.java:68)
+		at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:214)
+		at java.base/java.util.Spliterators$ArraySpliterator.forEachRemaining(Spliterators.java:1024)
+		at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:570)
+		at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:560)
+		at java.base/java.util.stream.ReduceOps$ReduceOp.evaluateSequential(ReduceOps.java:921)
+		at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:265)
+		at java.base/java.util.stream.ReferencePipeline.collect(ReferencePipeline.java:723)
+		at org.junit.jupiter.api.AssertAll.assertAll(AssertAll.java:77)
+		... 6 more
+	Suppressed: org.opentest4j.AssertionFailedError: Tipo de documento no debe ser nulo ==> expected: not <null>
+		at org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:152)
+		at org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+		at org.junit.jupiter.api.AssertNotNull.failNull(AssertNotNull.java:49)
+		at org.junit.jupiter.api.AssertNotNull.assertNotNull(AssertNotNull.java:35)
+		at org.junit.jupiter.api.Assertions.assertNotNull(Assertions.java:312)
+		at com.sis.Service.UserServiceTest.lambda$cuandoUsuarioTieneCamposNulos_deberiaDetectarse$4(UserServiceTest.java:185)
+		at org.junit.jupiter.api.AssertAll.lambda$assertAll$0(AssertAll.java:68)
+		at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:214)
+		at java.base/java.util.Spliterators$ArraySpliterator.forEachRemaining(Spliterators.java:1024)
+		at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:570)
+		at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:560)
+		at java.base/java.util.stream.ReduceOps$ReduceOp.evaluateSequential(ReduceOps.java:921)
+		at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:265)
+		at java.base/java.util.stream.ReferencePipeline.collect(ReferencePipeline.java:723)
+		at org.junit.jupiter.api.AssertAll.assertAll(AssertAll.java:77)
+		... 6 more
+

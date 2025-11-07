@@ -1,25 +1,39 @@
 package com.sis.Model;
 
-import java.util.Date;
 import com.sis.Model.Enum.Aseguradora;
+import jakarta.persistence.*;
+import java.time.LocalDate;
+import java.time.Period;
 
+@Entity
+@Table(name = "pacientes")
 public class Paciente extends Usuario {
-    private Date fechaNacimiento;
+
+    @Column(name = "fecha_nacimiento")
+    private LocalDate fechaNacimiento;
+
+    @Column(length = 10)
     private String sexo;
+
+    @Column(length = 20)
     private String telefono;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "seguro")
     private Aseguradora seguro;
-    private boolean esProvisional;
+
+    @Column(name = "es_provisional")
+    private boolean esProvisional = false;
 
     public Paciente() {
         super();
-        this.esProvisional = false;
     }
 
-    public Date getFechaNacimiento() {
+    public LocalDate getFechaNacimiento() {
         return fechaNacimiento;
     }
 
-    public void setFechaNacimiento(Date fechaNacimiento) {
+    public void setFechaNacimiento(LocalDate fechaNacimiento) {
         this.fechaNacimiento = fechaNacimiento;
     }
 
@@ -57,8 +71,6 @@ public class Paciente extends Usuario {
 
     public int getEdad() {
         if (fechaNacimiento == null) return 0;
-        Date hoy = new Date();
-        long diff = hoy.getTime() - fechaNacimiento.getTime();
-        return (int) (diff / (1000L * 60 * 60 * 24 * 365));
+        return Period.between(fechaNacimiento, LocalDate.now()).getYears();
     }
 }
