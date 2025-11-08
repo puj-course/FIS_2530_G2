@@ -53,7 +53,7 @@ jobs:
           reporter: java-junit
           fail-on-error: true
 
-        - name: 📋 Upload Test Reports (on failure)
+      - name: 📋 Upload Test Reports (on failure)
         if: failure()
         uses: actions/upload-artifact@v4
         with:
@@ -63,12 +63,20 @@ jobs:
             target/site/
           retention-days: 30
 
+      - name: 📊 Upload Coverage Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: target/site/jacoco/
+
       - name: 📦 Upload JAR artifact
         uses: actions/upload-artifact@v4
         with:
           name: application-jar
           path: target/*.jar
           retention-days: 30
+
   create-release:
     name: Create GitHub Release
     runs-on: ubuntu-latest
