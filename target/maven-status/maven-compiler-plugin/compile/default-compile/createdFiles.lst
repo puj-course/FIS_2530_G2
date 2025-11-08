@@ -19,7 +19,6 @@ com\sis\Model\TicketAdmision.class
 com\sis\Repository\DiagMedRepo.class
 com\sis\Model\Enum\EstadoTicket.class
 com\sis\Patterns\Builder\PacienteBuilder.class
-com\sis\Repo\UserRepo.class
 com\sis\Model\Medicamento.class
 com\sis\Model\Diagnostico.class
 com\sis\Patterns\Prototype\IPrototype.class
