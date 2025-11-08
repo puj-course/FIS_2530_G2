@@ -12,5 +12,5 @@ import java.util.UUID;
 public interface DiagnosticoRepo extends JpaRepository<Diagnostico, UUID> {
 
     Diagnostico save(Diagnostico diagnostico);
-    List<Diagnostico> findByConsulta(UUID consultaId);
+    List<Diagnostico> findByConsulta_Id(UUID consultaId);
 }

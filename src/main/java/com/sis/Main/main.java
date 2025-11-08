@@ -13,7 +13,7 @@ import com.sis.Service.VistaDoctor;
 
 @SpringBootApplication(scanBasePackages = "com.sis")
 @EntityScan(basePackages = "com.sis.Model")
-@EnableJpaRepositories(basePackages = "com.sis.Repo")
+@EnableJpaRepositories(basePackages = "com.sis.Repository") // SUPER IMPORTANT TO HAVE IN MIND THIS TAGS!!!!!!
 
 public class main {
 

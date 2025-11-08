@@ -14,6 +14,6 @@ import java.util.UUID;
 public interface ConsultaRepo extends JpaRepository<Consulta, UUID> {
 
     Consulta save(Consulta consulta);
-    List<Consulta> findByConsulta(UUID consultaId);
-    List<Consulta> findByDoctor(UUID doctorId);
+    List<Consulta> findConsultaById(UUID consultaId);
+    List<Consulta> findByDoctor_id(UUID doctorId);
 }

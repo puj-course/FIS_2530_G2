@@ -11,5 +11,5 @@ import java.util.UUID;
 public interface TriageRepo extends JpaRepository<Triage, UUID> {
 
     Triage save(Triage triage);
-    Optional<Triage> findByTicket(UUID ticketId);
+    Optional<Triage> findByTicket_Id(UUID ticketId);
 }
