@@ -50,6 +50,71 @@ jobs:
           name: application-jar
           path: target/*.jar
           retention-days: 30
+  create-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    if: startsWith(github.ref, 'refs/tags/')
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📥 Download JAR artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: application-jar
+          path: release-artifacts/
+
+      - name: 📝 Generate release notes
+        id: release_notes
+        run: |
+          TAG_NAME=${GITHUB_REF#refs/tags/}
+
+          cat > RELEASE_NOTES.md << EOF
+          ## 🚀 Release ${TAG_NAME}
+
+          ### 📦 What's New
+          - Spring Boot Application with PostgreSQL
+          - Built with JDK 21
+          - Docker containerized deployment
+          - Health monitoring with Spring Boot Actuator
+
+          ### 📥 Downloads
+          **JAR File:** \`sis-0.0.1.jar\` - Requires Java 21+
+          **Docker:** Available via Docker Hub
+
+          ### 🐳 Docker Deployment
+          \`\`\`bash
+          docker pull ${{ secrets.DOCKER_USERNAME }}/sis-app:${TAG_NAME}
+          docker compose up -d
+          \`\`\`
+
+          ### 🔧 Requirements
+          - Java 21 or later (for JAR)
+          - Docker & Docker Compose (for containers)
+          - PostgreSQL 16 (included in docker-compose)
+
+          ### 📝 Changelog
+          $(git log --pretty=format:"- %s" $(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")..HEAD 2>/dev/null || echo "Initial release")
+          EOF
+
+          {
+            echo "notes<<EOF"
+            cat RELEASE_NOTES.md
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
+
+      - name: 🎉 Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release-artifacts/*.jar
+          body: ${{ steps.release_notes.outputs.notes }}
+          draft: false
+          prerelease: ${{ contains(github.ref, 'beta') || contains(github.ref, 'alpha') || contains(github.ref, 'rc') }}
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build-docker-image:
     name: Build Docker Image
@@ -108,7 +173,7 @@ jobs:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     environment:
       name: staging
-      url: https://staging.example.com
+      # url: https://staging.example.com --> none bc we are working on localhost
 
     steps:
       - name: 📥 Checkout code
@@ -383,5 +448,5 @@ jobs:
                 `2. Verify database connectivity\n` +
                 `3. Review recent changes\n` +
                 `4. Fix issues and redeploy`,
-              labels: ['deployment', 'incident', 'high-priority', 'docker']
+              labels: ['deployment', 'bug', 'prioridad: muy alta', 'docker']
             });
