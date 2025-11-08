@@ -44,6 +44,25 @@ jobs:
       - name: 🧪 Run tests
         run: mvn test
 
+      - name: 📊 Publish Test Results
+        uses: dorny/test-reporter@v2
+        if: always()
+        with:
+          name: Maven Tests
+          path: target/surefire-reports/*.xml
+          reporter: java-junit
+          fail-on-error: true
+
+        - name: 📋 Upload Test Reports (on failure)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: |
+            target/surefire-reports/
+            target/site/
+          retention-days: 30
+
       - name: 📦 Upload JAR artifact
         uses: actions/upload-artifact@v4
         with:
