@@ -1,7 +1,7 @@
 package com.sis.Service;
 
 import com.sis.Model.Usuario;
-import com.sis.Repo.UserRepo;
+import com.sis.Repository.UsuarioRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
@@ -10,29 +10,29 @@ import java.util.List;
 public class UserService {
 
     @Autowired
-    UserRepo userRepo;
+    UsuarioRepo usuarioRepo;
 
     public List<Usuario> getUsuario() {
-        return userRepo.findAll();
+        return usuarioRepo.findAll();
     }
 
     public Usuario getUsuarioById(int id) {
-        return userRepo.findById(id).orElse(new Usuario());
+        return usuarioRepo.findById(id).orElse(new Usuario());
     }
     // importante diferenciar si id se refiere a documento o al UUID, dependiendo de cual sea, especificar!!!!
 
     public void addUsuario(Usuario usr) {
-        userRepo.save(usr);
+        usuarioRepo.save(usr);
     }
 
     public void updateUsuario(Usuario usr) {
-        userRepo.save(usr);
+        usuarioRepo.save(usr);
 
 
     }
 
     public void deleteUsuario(int usrId) {
-        userRepo.deleteById(usrId);
+        usuarioRepo.deleteById(usrId);
 
     }
 }

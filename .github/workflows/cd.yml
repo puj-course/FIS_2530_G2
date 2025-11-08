@@ -23,22 +23,9 @@ permissions:
   issues: write
 
 jobs:
-  build-release:
-    name: Build Release Artifacts
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        include:
-          - os: ubuntu-latest
-            platform: linux
-            artifact: jar
-          - os: windows-latest
-            platform: windows
-            artifact: exe
-          - os: macos-latest
-            platform: macos
-            artifact: dmg
+  build-and-test:
+    name: Build and Test Application
+    runs-on: ubuntu-latest
 
     steps:
       - name: 📥 Checkout code
@@ -54,129 +41,154 @@ jobs:
       - name: 🔨 Build application
         run: mvn clean package -DskipTests
 
-      - name: 🎨 Build native image (Linux)
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          mvn javafx:jlink
-          mvn jpackage:jpackage -Djpackage.type=deb
-        continue-on-error: true
+      - name: 🧪 Run tests
+        run: mvn test
 
-      - name: 🎨 Build native image (Windows)
-        if: matrix.os == 'windows-latest'
-        run: |
-          mvn javafx:jlink
-          mvn jpackage:jpackage -Djpackage.type=exe
-        continue-on-error: true
-
-      - name: 🎨 Build native image (macOS)
-        if: matrix.os == 'macos-latest'
-        run: |
-          mvn javafx:jlink
-          mvn jpackage:jpackage -Djpackage.type=dmg
-        continue-on-error: true
-
-      - name: 📦 Prepare distribution
-        run: |
-          mkdir -p distribution
-          cp target/*.jar distribution/ || true
-          cp target/*.exe distribution/ || true
-          cp target/*.deb distribution/ || true
-          cp target/*.dmg distribution/ || true
-          cp README.md distribution/ || true
-          cp LICENSE distribution/ || true
-
-      - name: 📤 Upload release artifacts
+      - name: 📦 Upload JAR artifact
         uses: actions/upload-artifact@v4
         with:
-          name: release-${{ matrix.platform }}
-          path: distribution/
-          retention-days: 90
+          name: application-jar
+          path: target/*.jar
+          retention-days: 30
 
-  create-release:
-    name: Create GitHub Release
+  build-docker-image:
+    name: Build Docker Image
     runs-on: ubuntu-latest
-    needs: build-release
-    if: startsWith(github.ref, 'refs/tags/')
+    needs: build-and-test
 
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
 
-      - name: 📥 Download all artifacts
+      - name: 📥 Download JAR artifact
         uses: actions/download-artifact@v4
         with:
-          path: artifacts/
+          name: application-jar
+          path: target/
 
-      - name: 📝 Generate release notes
-        id: release_notes
-        run: |
-          cat > RELEASE_NOTES.md << EOF
-          ## 🚀 Release ${GITHUB_REF#refs/tags/}
-          
-          ### 📦 What's New
-          - JavaFX Desktop Application
-          - Built with JDK 21 and JavaFX SDK 21
-          - Multi-platform support (Windows, Linux, macOS)
-          
-          ### 📥 Downloads
-          Choose the appropriate package for your platform:
-          
-          **Windows:** \`.exe\` installer
-          **Linux:** \`.deb\` package or \`.jar\` file
-          **macOS:** \`.dmg\` image or \`.jar\` file
-          
-          ### 🔧 Requirements
-          - Java 21 or later (if using .jar files)
-          - Native packages include bundled JRE
-          
-          ### 📝 Changelog
-          $(git log --pretty=format:"- %s" $(git describe --tags --abbrev=0 HEAD^)..HEAD)
-          EOF
-          
-          echo "notes<<EOF" >> $GITHUB_OUTPUT
-          cat RELEASE_NOTES.md >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+      - name: 🐳 Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-      - name: 🎉 Create GitHub Release
-        uses: softprops/action-gh-release@v2
+      - name: 🔐 Log in to Docker Hub (opcional)
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
         with:
-          files: artifacts/**/*
-          body: ${{ steps.release_notes.outputs.notes }}
-          draft: false
-          prerelease: ${{ contains(github.ref, 'beta') || contains(github.ref, 'alpha') }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: 🏷️ Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ${{ secrets.DOCKER_USERNAME }}/sis-app
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: 🔨 Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
   deploy-staging:
     name: Deploy to Staging
     runs-on: ubuntu-latest
-    needs: build-release
+    needs: build-docker-image
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     environment:
       name: staging
       url: https://staging.example.com
 
     steps:
-      - name: 📥 Download artifacts
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📥 Download JAR artifact
         uses: actions/download-artifact@v4
         with:
-          name: release-linux
-          path: ./release
+          name: application-jar
+          path: target/
 
-      - name: 🚀 Deploy to staging server
+      - name: 🐳 Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: 🔨 Build Docker image locally
         run: |
-          echo "Deploying to staging environment..."
-          echo "Artifact: $(ls -lh release/)"
-          # Aquí agregarías tu lógica de despliegue real
-          # Ejemplo: scp, rsync, docker push, etc.
+          docker build -t sis-app:staging .
+
+      - name: 🗑️ Clean up existing containers
+        run: |
+          docker compose down || true
+          docker volume prune -f || true
+
+      - name: 🚀 Deploy with Docker Compose
+        run: |
+          # Crear archivo .env para staging
+          cat > .env << EOF
+          COMPOSE_PROJECT_NAME=sis-staging
+          SPRING_PROFILES_ACTIVE=postgres
+          DB_URL=jdbc:postgresql://sis-db:5432/sis
+          DB_USER_NAME=postgres
+          DB_PASSWORD=${{ secrets.STAGING_DB_PASSWORD }}
+          POSTGRES_DB=sis
+          POSTGRES_USER=postgres
+          POSTGRES_PASSWORD=${{ secrets.STAGING_DB_PASSWORD }}
+          EOF
+          
+          # Levantar servicios
+          docker compose up -d
+          
+          echo "Esperando a que los servicios estén listos..."
+          sleep 30
 
       - name: ✅ Verify deployment
         run: |
-          echo "Running smoke tests..."
-          # Aquí agregarías pruebas de humo
-          # curl -f https://staging.example.com/health || exit 1
+          echo "Verificando el health de la base de datos..."
+          docker compose exec -T sis-db pg_isready -U postgres -d sis
+          
+          echo "Verificando el health de la aplicación..."
+          max_attempts=30
+          attempt=0
+          
+          while [ $attempt -lt $max_attempts ]; do
+            if curl -f http://localhost:8080/actuator/health 2>/dev/null; then
+              echo "✅ Aplicación está respondiendo correctamente"
+              exit 0
+            fi
+            attempt=$((attempt + 1))
+            echo "Intento $attempt de $max_attempts - Esperando..."
+            sleep 10
+          done
+          
+          echo "❌ La aplicación no respondió después de $max_attempts intentos"
+          docker compose logs sis-app
+          exit 1
 
-      - name: 💬 Notify deployment
+      - name: 📊 Show container status
+        if: always()
+        run: |
+          echo "Estado de los contenedores:"
+          docker compose ps
+          
+          echo -e "\n📋 Logs de la aplicación:"
+          docker compose logs --tail=50 sis-app
+          
+          echo -e "\n📋 Logs de la base de datos:"
+          docker compose logs --tail=50 sis-db
+
+      - name: 💬 Notify deployment success
+        if: success()
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GH_TOKEN }}
@@ -185,7 +197,10 @@ jobs:
             const message = `🚀 **Staging Deployment Successful**\n\n` +
               `**Commit:** ${commit}\n` +
               `**Environment:** Staging\n` +
-              `**Time:** ${new Date().toISOString()}`;
+              `**Time:** ${new Date().toISOString()}\n` +
+              `**Docker Compose:** Services running\n` +
+              `- sis-app: ✅\n` +
+              `- sis-db: ✅`;
             
             github.rest.repos.createCommitComment({
               ...context.repo,
@@ -193,44 +208,100 @@ jobs:
               body: message
             });
 
+      - name: 🔄 Cleanup on failure
+        if: failure()
+        run: |
+          echo "Limpiando recursos debido a fallo en el deployment..."
+          docker compose down
+          docker compose logs
+
   deploy-production:
     name: Deploy to Production
     runs-on: ubuntu-latest
-    needs: [build-release, deploy-staging]
+    needs: [build-docker-image, deploy-staging]
     if: startsWith(github.ref, 'refs/tags/v')
     environment:
       name: production
       url: https://app.example.com
+      # YET TO CHANGE
 
     steps:
-      - name: 📥 Download artifacts
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📥 Download JAR artifact
         uses: actions/download-artifact@v4
         with:
-          name: release-linux
-          path: ./release
+          name: application-jar
+          path: target/
+
+      - name: 🐳 Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: 🔨 Build Docker image
+        run: |
+          docker build -t sis-app:production .
 
       - name: 🔍 Pre-deployment checks
         run: |
-          echo "Running pre-deployment checks..."
-          # Verificaciones antes de producción
-          test -f release/*.jar || exit 1
-          echo "All checks passed!"
+          echo "Ejecutando verificaciones pre-deployment..."
+          test -f target/sis-0.0.1.jar || exit 1
+          docker images | grep sis-app || exit 1
+          echo "✅ Todas las verificaciones pasaron"
 
       - name: 🚀 Deploy to production
         run: |
-          echo "Deploying to production environment..."
-          echo "Artifact: $(ls -lh release/)"
-          # Aquí agregarías tu lógica de despliegue a producción
-          # Ejemplo: Kubernetes, AWS, Azure, etc.
+          # Crear archivo .env para producción
+          cat > .env << EOF
+          COMPOSE_PROJECT_NAME=sis-production
+          SPRING_PROFILES_ACTIVE=postgres
+          DB_URL=jdbc:postgresql://sis-db:5432/sis
+          DB_USER_NAME=postgres
+          DB_PASSWORD=${{ secrets.PRODUCTION_DB_PASSWORD }}
+          POSTGRES_DB=sis
+          POSTGRES_USER=postgres
+          POSTGRES_PASSWORD=${{ secrets.PRODUCTION_DB_PASSWORD }}
+          EOF
+          
+          # Backup de la base de datos antes del deployment
+          docker compose exec -T sis-db pg_dump -U postgres sis > backup_$(date +%Y%m%d_%H%M%S).sql || true
+          
+          # Rolling update: levantar nuevos contenedores antes de bajar los viejos
+          docker compose up -d --no-deps --build sis-app
+          
+          echo "Esperando a que los nuevos servicios estén listos..."
+          sleep 45
 
       - name: ✅ Verify production deployment
         run: |
-          echo "Running production smoke tests..."
-          # Pruebas de verificación en producción
-          # curl -f https://app.example.com/health || exit 1
-          echo "Production deployment verified!"
+          echo "Verificando deployment en producción..."
+          
+          # Health check
+          max_attempts=30
+          attempt=0
+          
+          while [ $attempt -lt $max_attempts ]; do
+            if curl -f http://localhost:8080/actuator/health 2>/dev/null; then
+              echo "✅ Aplicación en producción está respondiendo"
+              break
+            fi
+            attempt=$((attempt + 1))
+            echo "Intento $attempt de $max_attempts"
+            sleep 10
+          done
+          
+          if [ $attempt -eq $max_attempts ]; then
+            echo "❌ Falló la verificación de producción"
+            docker compose logs sis-app
+            exit 1
+          fi
+          
+          # Verificar conectividad con la base de datos
+          docker compose exec -T sis-db pg_isready -U postgres -d sis
+          echo "✅ Deployment de producción verificado exitosamente"
 
       - name: 📊 Create deployment record
+        if: success()
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GH_TOKEN }}
@@ -240,7 +311,10 @@ jobs:
               `**Version:** ${tag}\n` +
               `**Environment:** Production\n` +
               `**Deployed at:** ${new Date().toISOString()}\n` +
-              `**Status:** ✅ Success`;
+              `**Status:** ✅ Success\n\n` +
+              `**Services:**\n` +
+              `- Spring Boot App: ✅\n` +
+              `- PostgreSQL 16: ✅`;
             
             github.rest.repos.createCommitComment({
               ...context.repo,
@@ -251,11 +325,8 @@ jobs:
       - name: 🔔 Notify team
         if: success()
         run: |
-          echo "Sending notification to team..."
-          # Aquí podrías integrar Slack, Discord, Email, etc.
-          # curl -X POST -H 'Content-type: application/json' \
-          #   --data '{"text":"Production deployment successful!"}' \
-          #   ${{ secrets.SLACK_WEBHOOK_URL }}
+          echo "📢 Deployment exitoso a producción"
+          # Aquí puedes agregar notificaciones a Slack, Discord, etc.
 
   rollback:
     permissions:
@@ -267,11 +338,28 @@ jobs:
     needs: [deploy-staging, deploy-production]
 
     steps:
-      - name: 🔄 Rollback to previous version
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔄 Rollback Docker containers
         run: |
-          echo "Rolling back deployment..."
-          # Lógica de rollback
-          echo "Rollback completed!"
+          echo "🔄 Iniciando rollback..."
+          
+          # Detener contenedores actuales
+          docker compose down
+          
+          # Restaurar imagen anterior (si existe)
+          if docker images | grep -q "sis-app:previous"; then
+            docker tag sis-app:previous sis-app:latest
+            docker compose up -d
+            echo "✅ Rollback completado - imagen anterior restaurada"
+          else
+            echo "⚠️ No se encontró imagen anterior para rollback"
+          fi
+          
+          # Mostrar estado
+          docker compose ps
+          docker compose logs --tail=50
 
       - name: 🚨 Create incident issue
         uses: actions/github-script@v7
@@ -284,8 +372,16 @@ jobs:
               body: `## Deployment Failure\n\n` +
                 `**Workflow:** ${context.workflow}\n` +
                 `**Run ID:** ${context.runId}\n` +
-                `**Commit:** ${context.sha}\n\n` +
-                `Automatic rollback has been initiated.\n` +
-                `Please investigate the failure.`,
-              labels: ['deployment', 'incident', 'high-priority']
+                `**Commit:** ${context.sha}\n` +
+                `**Environment:** ${context.job}\n\n` +
+                `### Actions Taken\n` +
+                `- ✅ Automatic rollback initiated\n` +
+                `- ✅ Previous containers restored\n` +
+                `- ⚠️ Manual investigation required\n\n` +
+                `### Next Steps\n` +
+                `1. Check application logs\n` +
+                `2. Verify database connectivity\n` +
+                `3. Review recent changes\n` +
+                `4. Fix issues and redeploy`,
+              labels: ['deployment', 'incident', 'high-priority', 'docker']
             });

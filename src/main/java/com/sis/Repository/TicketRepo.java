@@ -14,5 +14,5 @@ public interface TicketRepo extends JpaRepository<TicketAdmision, UUID> {
 
     TicketAdmision save(TicketAdmision ticketAdmision);
     List<TicketAdmision> findByEstado(EstadoTicket estado);
-    List<TicketAdmision> findByPaciente(UUID pacienteId);
+    List<TicketAdmision> findByPaciente_Id(UUID pacienteId);
 }

@@ -12,5 +12,6 @@ import java.util.UUID;
 public interface TratamientoRepo extends JpaRepository<Tratamiento, UUID> {
 
     Tratamiento save(Tratamiento tratamiento);
-    List<Tratamiento> findByDiagnostico(UUID diagnosticoId);
+    List<Tratamiento> findByDiagnostico_Id(UUID diagnosticoId);
+
 }

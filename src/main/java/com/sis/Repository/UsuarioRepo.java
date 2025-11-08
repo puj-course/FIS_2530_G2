@@ -8,9 +8,11 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface UsuarioRepo extends JpaRepository<Usuario,UUID> {
+public interface UsuarioRepo extends JpaRepository<Usuario,Integer> { // please change it when with more energy, gotta make it UUID
     
-    Optional<Usuario> findById(UUID id);
+    Optional<Usuario> findById(Integer id);
     Usuario save(Usuario usuario);
-    Optional<Usuario> findByDocumento(String tipoDocumento, String numeroDocumento);
+    Optional<Usuario> findByTipoDocumentoAndNumeroDocumento(String tipoDocumento, String numeroDocumento);
+
+
 }

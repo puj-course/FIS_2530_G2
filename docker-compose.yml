@@ -1,0 +1,46 @@
+services:
+  sis-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sis_app
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: postgres
+      DB_URL: jdbc:postgresql://sis-db:5432/sis
+      DB_USER_NAME: postgres
+      DB_PASSWORD: 1234
+    depends_on:
+      sis-db:
+        condition: service_healthy
+    networks:
+      - sis-network
+
+  sis-db:
+    image: postgres:16
+    container_name: sis_db
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: sis
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d sis"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - sis-network
+
+volumes:
+  pgdata:
+
+networks:
+  sis-network:
+    driver: bridge
