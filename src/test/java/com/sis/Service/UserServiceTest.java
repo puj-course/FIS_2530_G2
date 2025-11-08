@@ -2,7 +2,7 @@ package com.sis.Service;
 
 import com.sis.Model.Usuario;
 import com.sis.Model.Enum.TipoDoc;
-import com.sis.Repo.UserRepo;
+import com.sis.Repository.UsuarioRepo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,7 +22,7 @@ import static org.mockito.Mockito.*;
 class UserServiceTest {
 
     @Mock
-    private UserRepo userRepo;
+    private UsuarioRepo userRepo;
 
     @InjectMocks
     private UserService userService;

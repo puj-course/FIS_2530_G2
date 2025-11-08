@@ -1,0 +1,60 @@
+-------------------------------------------------------------------------------
+Test set: com.sis.Service.UserServiceTest
+-------------------------------------------------------------------------------
+Tests run: 7, Failures: 0, Errors: 7, Skipped: 0, Time elapsed: 0.286 s <<< FAILURE! -- in com.sis.Service.UserServiceTest
+com.sis.Service.UserServiceTest.cuandoUsuarioTieneDatosParciales_deberiaPermitirse -- Time elapsed: 0.260 s <<< ERROR!
+java.lang.NullPointerException: Cannot invoke "com.sis.Repository.UsuarioRepo.save(com.sis.Model.Usuario)" because "this.usuarioRepo" is null
+	at com.sis.Service.UserService.addUsuario(UserService.java:25)
+	at com.sis.Service.UserServiceTest.cuandoUsuarioTieneDatosParciales_deberiaPermitirse(UserServiceTest.java:139)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+
+com.sis.Service.UserServiceTest.cuandoExistenDosUsuariosConMismoUsername_deberiaDetectarse -- Time elapsed: 0.003 s <<< ERROR!
+java.lang.NullPointerException: Cannot invoke "com.sis.Repository.UsuarioRepo.findAll()" because "this.usuarioRepo" is null
+	at com.sis.Service.UserService.getUsuario(UserService.java:16)
+	at com.sis.Service.UserServiceTest.cuandoExistenDosUsuariosConMismoUsername_deberiaDetectarse(UserServiceTest.java:109)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+
+com.sis.Service.UserServiceTest.cuandoUsuarioTieneCamposMininosRequeridos_deberiaGuardarse -- Time elapsed: 0.002 s <<< ERROR!
+java.lang.NullPointerException: Cannot invoke "com.sis.Repository.UsuarioRepo.save(com.sis.Model.Usuario)" because "this.usuarioRepo" is null
+	at com.sis.Service.UserService.addUsuario(UserService.java:25)
+	at com.sis.Service.UserServiceTest.cuandoUsuarioTieneCamposMininosRequeridos_deberiaGuardarse(UserServiceTest.java:167)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+
+com.sis.Service.UserServiceTest.cuandoUsuarioEstaCompleto_deberiaGuardarseCorrectamente -- Time elapsed: 0.002 s <<< ERROR!
+java.lang.NullPointerException: Cannot invoke "com.sis.Repository.UsuarioRepo.save(com.sis.Model.Usuario)" because "this.usuarioRepo" is null
+	at com.sis.Service.UserService.addUsuario(UserService.java:25)
+	at com.sis.Service.UserServiceTest.cuandoUsuarioEstaCompleto_deberiaGuardarseCorrectamente(UserServiceTest.java:182)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+
+com.sis.Service.UserServiceTest.cuandoExistenDosUsuariosConMismoId_deberiaDetectarse -- Time elapsed: 0.002 s <<< ERROR!
+java.lang.NullPointerException: Cannot invoke "com.sis.Repository.UsuarioRepo.findAll()" because "this.usuarioRepo" is null
+	at com.sis.Service.UserService.getUsuario(UserService.java:16)
+	at com.sis.Service.UserServiceTest.cuandoExistenDosUsuariosConMismoId_deberiaDetectarse(UserServiceTest.java:56)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+
+com.sis.Service.UserServiceTest.cuandoExistenDosUsuariosConMismoDocumento_deberiaDetectarse -- Time elapsed: 0.002 s <<< ERROR!
+java.lang.NullPointerException: Cannot invoke "com.sis.Repository.UsuarioRepo.findAll()" because "this.usuarioRepo" is null
+	at com.sis.Service.UserService.getUsuario(UserService.java:16)
+	at com.sis.Service.UserServiceTest.cuandoExistenDosUsuariosConMismoDocumento_deberiaDetectarse(UserServiceTest.java:80)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+
+com.sis.Service.UserServiceTest.cuandoSeObtienenTodosLosUsuarios_deberiaRetornarLista -- Time elapsed: 0.002 s <<< ERROR!
+java.lang.NullPointerException: Cannot invoke "com.sis.Repository.UsuarioRepo.findAll()" because "this.usuarioRepo" is null
+	at com.sis.Service.UserService.getUsuario(UserService.java:16)
+	at com.sis.Service.UserServiceTest.cuandoSeObtienenTodosLosUsuarios_deberiaRetornarLista(UserServiceTest.java:195)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+
