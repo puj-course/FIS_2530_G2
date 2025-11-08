@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PacienteBuilder.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">sis</a> &gt; <a href="index.source.html" class="el_package">com.sis.Patterns.Builder</a> &gt; <span class="el_source">PacienteBuilder.java</span></div><h1>PacienteBuilder.java</h1><pre class="source lang-java linenums">package com.sis.Patterns.Builder;
+
+import com.sis.Model.Paciente;
+import com.sis.Model.Enum.TipoDoc;
+import com.sis.Model.Enum.Aseguradora;
+import java.time.LocalDate;
+import java.util.UUID;
+
+public class PacienteBuilder implements IPacienteBuilder {
+
+    private Paciente paciente;
+
+<span class="nc" id="L13">    public PacienteBuilder() {</span>
+<span class="nc" id="L14">        this.paciente = new Paciente();</span>
+<span class="nc" id="L15">        this.paciente.setActivo(true);</span>
+<span class="nc" id="L16">        this.paciente.setEsProvisional(false);</span>
+<span class="nc" id="L17">    }</span>
+
+    @Override
+    public IPacienteBuilder conId(UUID id) {
+<span class="nc" id="L21">        this.paciente.setId(id);</span>
+<span class="nc" id="L22">        return this;</span>
+    }
+
+    @Override
+    public IPacienteBuilder conUsername(String username) {
+<span class="nc" id="L27">        this.paciente.setUsername(username);</span>
+<span class="nc" id="L28">        return this;</span>
+    }
+
+    @Override
+    public IPacienteBuilder conHash(String hash) {
+<span class="nc" id="L33">        this.paciente.setHash(hash);</span>
+<span class="nc" id="L34">        return this;</span>
+    }
+
+    @Override
+    public IPacienteBuilder conNombres(String nombres) {
+<span class="nc" id="L39">        this.paciente.setNombres(nombres);</span>
+<span class="nc" id="L40">        return this;</span>
+    }
+
+    @Override
+    public IPacienteBuilder conApellidos(String apellidos) {
+<span class="nc" id="L45">        this.paciente.setApellidos(apellidos);</span>
+<span class="nc" id="L46">        return this;</span>
+    }
+
+    @Override
+    public IPacienteBuilder conEmail(String email) {
+<span class="nc" id="L51">        this.paciente.setEmail(email);</span>
+<span class="nc" id="L52">        return this;</span>
+    }
+
+    @Override
+    public IPacienteBuilder conDocumento(TipoDoc tipo, String numero) {
+<span class="nc" id="L57">        this.paciente.setTipoDocumento(tipo);</span>
+<span class="nc" id="L58">        this.paciente.setNumeroDocumento(numero);</span>
+<span class="nc" id="L59">        return this;</span>
+    }
+
+    @Override
+    public IPacienteBuilder conDireccion(String direccion) {
+<span class="nc" id="L64">        this.paciente.setDireccion(direccion);</span>
+<span class="nc" id="L65">        return this;</span>
+    }
+
+    @Override
+    public IPacienteBuilder conFechaNacimiento(LocalDate fecha) {
+<span class="nc" id="L70">        this.paciente.setFechaNacimiento(fecha);</span>
+<span class="nc" id="L71">        return this;</span>
+    }
+
+    @Override
+    public IPacienteBuilder conSexo(String sexo) {
+<span class="nc" id="L76">        this.paciente.setSexo(sexo);</span>
+<span class="nc" id="L77">        return this;</span>
+    }
+
+    @Override
+    public IPacienteBuilder conTelefono(String telefono) {
+<span class="nc" id="L82">        this.paciente.setTelefono(telefono);</span>
+<span class="nc" id="L83">        return this;</span>
+    }
+
+    @Override
+    public IPacienteBuilder conSeguro(Aseguradora seguro) {
+<span class="nc" id="L88">        this.paciente.setSeguro(seguro);</span>
+<span class="nc" id="L89">        return this;</span>
+    }
+
+    @Override
+    public IPacienteBuilder provisional(boolean esProvisional) {
+<span class="nc" id="L94">        this.paciente.setEsProvisional(esProvisional);</span>
+<span class="nc" id="L95">        return this;</span>
+    }
+
+    @Override
+    public IPacienteBuilder activo(boolean activo) {
+<span class="nc" id="L100">        this.paciente.setActivo(activo);</span>
+<span class="nc" id="L101">        return this;</span>
+    }
+
+    @Override
+    public Paciente build() {
+<span class="nc bnc" id="L106" title="All 4 branches missed.">        if (paciente.getNombres() == null || paciente.getApellidos() == null) {</span>
+<span class="nc" id="L107">            throw new IllegalStateException(&quot;Debe proporcionar nombres y apellidos&quot;);</span>
+        }
+<span class="nc bnc" id="L109" title="All 4 branches missed.">        if (paciente.getTipoDocumento() == null || paciente.getNumeroDocumento() == null) {</span>
+<span class="nc" id="L110">            throw new IllegalStateException(&quot;Debe proporcionar tipo y número de documento&quot;);</span>
+        }
+
+<span class="nc" id="L113">        Paciente resultado = this.paciente;</span>
+<span class="nc" id="L114">        this.paciente = new Paciente();</span>
+<span class="nc" id="L115">        this.paciente.setActivo(true);</span>
+<span class="nc" id="L116">        this.paciente.setEsProvisional(false);</span>
+<span class="nc" id="L117">        return resultado;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>
