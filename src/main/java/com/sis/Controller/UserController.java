@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 public class UserController {
@@ -19,7 +20,7 @@ public class UserController {
         }
 
         @GetMapping("/Usuario/{id}")
-        public Usuario getUsuarioById(@PathVariable int id) {
+        public Usuario getUsuarioById(@PathVariable UUID id) {
             return service.getUsuarioById(id);
         }
 
@@ -38,7 +39,7 @@ public class UserController {
 
         //delete Usuario
         @DeleteMapping("/Usuario/{id}")
-        public void deleteUsuario(@PathVariable int id) {
+        public void deleteUsuario(@PathVariable UUID id) {
             service.deleteUsuario(id);
         }
 }
