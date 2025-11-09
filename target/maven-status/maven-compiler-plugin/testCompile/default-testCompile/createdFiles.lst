@@ -1,3 +1,3 @@
-com\sis\Service\UserServiceTest.class
-com\sis\Service\EventBusTest.class
-com\sis\Model\UsuarioTest.class
+com/sis/Service/EventBusTest.class
+com/sis/Model/UsuarioTest.class
+com/sis/Service/UserServiceTest.class
