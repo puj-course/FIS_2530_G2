@@ -8,10 +8,14 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface UsuarioRepo extends JpaRepository<Usuario, UUID> { // ✅ CORREGIDO: era Integer
+public interface UsuarioRepo extends JpaRepository<Usuario, UUID> {
 
-    Optional<Usuario> findById(UUID id); // ✅ CORREGIDO
-    Optional<Usuario> findByUsername(String username); // ✅ NUEVO: para login
-    Optional<Usuario> findByTipoDocumentoAndNumeroDocumento(String tipoDocumento, String numeroDocumento);
-    boolean existsByUsername(String username); // ✅ ÚTIL: para registro
+    Optional<Usuario> findById(UUID id);
+    Optional<Usuario> findByUsername(String username);
+    Optional<Usuario> findByNumeroDocumento(String numeroDocumento);
+    Optional<Usuario> findByEmail(String email);
+
+    boolean existsByUsername(String username);
+    boolean existsByNumeroDocumento(String numeroDocumento);
+    boolean existsByEmail(String email);
 }

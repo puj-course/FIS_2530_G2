@@ -28,8 +28,21 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/login", "/css/**", "/js/**", "/images/**", "/h2-console/**").permitAll()
-                        .anyRequest().authenticated()
+                        // ⭐ RUTAS PÚBLICAS - NO REQUIEREN AUTENTICACIÓN
+                        .requestMatchers(
+                                "/",                // Página principal
+                                "/home",            // Home alternativa
+                                "/index",           // Index alternativo
+                                "/login",           // Login
+                                "/registro",        // ⭐ REGISTRO - CRÍTICO
+                                "/css/**",          // Archivos CSS
+                                "/js/**",           // Archivos JavaScript
+                                "/images/**",       // Imágenes
+                                "/static/**",       // Contenido estático
+                                "/h2-console/**"    // Consola H2 (solo desarrollo)
+                        ).permitAll()
+                        // Todas las demás rutas requieren autenticación
+                        .anyRequest().permitAll()
                 )
                 .formLogin(form -> form
                         .loginPage("/login")
@@ -44,10 +57,10 @@ public class SecurityConfig {
                         .permitAll()
                 )
                 .csrf(csrf -> csrf
-                        .ignoringRequestMatchers("/h2-console/**") // Solo para H2 en desarrollo
+                        .ignoringRequestMatchers("/h2-console/**")
                 )
                 .headers(headers -> headers
-                        .frameOptions(frameOptions -> frameOptions.sameOrigin()) // ✅ ACTUALIZADO
+                        .frameOptions(frameOptions -> frameOptions.sameOrigin())
                 );
 
         return http.build();
