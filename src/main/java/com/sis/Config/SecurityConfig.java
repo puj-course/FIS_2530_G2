@@ -42,7 +42,7 @@ public class SecurityConfig {
                                 "/h2-console/**"    // Consola H2 (solo desarrollo)
                         ).permitAll()
                         // Todas las demás rutas requieren autenticación
-                        .anyRequest().permitAll()
+                        .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
                         .loginPage("/login")
