@@ -35,14 +35,14 @@ public class SecurityConfig {
                                 "/index",           // Index alternativo
                                 "/login",           // Login
                                 "/registro",        // ⭐ REGISTRO - CRÍTICO
-                                "/css/**",          // Archivos CSS
-                                "/js/**",           // Archivos JavaScript
-                                "/images/**",       // Imágenes
-                                "/static/**",       // Contenido estático
-                                "/h2-console/**"    // Consola H2 (solo desarrollo)
+                                "/css/",          // Archivos CSS
+                                "/js/",           // Archivos JavaScript
+                                "/images/",       // Imágenes
+                                "/static/",       // Contenido estático
+                                "/h2-console/"    // Consola H2 (solo desarrollo)
                         ).permitAll()
                         // Todas las demás rutas requieren autenticación
-                        .anyRequest().permitAll()
+                        .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
                         .loginPage("/login")
@@ -57,7 +57,7 @@ public class SecurityConfig {
                         .permitAll()
                 )
                 .csrf(csrf -> csrf
-                        .ignoringRequestMatchers("/h2-console/**")
+                        .ignoringRequestMatchers("/h2-console/")
                 )
                 .headers(headers -> headers
                         .frameOptions(frameOptions -> frameOptions.sameOrigin())

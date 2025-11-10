@@ -249,7 +249,7 @@
                             required>
                         <option value="">Seleccione...</option>
                         <option th:each="tipo : ${tiposUsuario}"
-                                th:value="${tipo}"
+                                th:value="${tipo.name()}"
                                 th:text="${tipo.displayName}">
                         </option>
                     </select>
