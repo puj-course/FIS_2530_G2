@@ -56,6 +56,10 @@ public class Usuario {
     @Column(name = "creado_en", nullable = false, updatable = false)
     private LocalDateTime creadoEn;
 
+    // Campo teléfono agregado
+    @Column(length = 20)
+    private String telefono;
+
     @PrePersist
     protected void onCreate() {
         if (creadoEn == null) {
@@ -166,5 +170,14 @@ public class Usuario {
 
     public void setTipoUsuario(TipoUsuario tipoUsuario) {
         this.tipoUsuario = tipoUsuario;
+    }
+
+    // Getter y Setter para teléfono
+    public String getTelefono() {
+        return telefono;
+    }
+
+    public void setTelefono(String telefono) {
+        this.telefono = telefono;
     }
 }
