@@ -82,7 +82,7 @@ public class TicketAdmision {
     public void setCreadoEn(LocalDateTime creadoEn) {
         this.creadoEn = creadoEn;
     }
-    
+
     public Triage getTriage() {
         return triage;
     }
