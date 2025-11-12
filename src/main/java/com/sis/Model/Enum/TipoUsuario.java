@@ -1,10 +1,23 @@
 package com.sis.Model.Enum;
 
 public enum TipoUsuario {
-    Doctor,
-    Paciente,
-    Enfermera,
-    Administrador,
+    ADMIN("Administrador"),
+    DOCTOR("Doctor"),
+    ENFERMERA("Enfermera"),
+    PACIENTE("Paciente");
 
-    // Esto lo podemos usar para determinar quien tiene acceso a que vista, sin embargo, falta planear
+    private final String displayName;
+
+    TipoUsuario(String displayName) {
+        this.displayName = displayName;
+    }
+
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    @Override
+    public String toString() {
+        return displayName;
+    }
 }
