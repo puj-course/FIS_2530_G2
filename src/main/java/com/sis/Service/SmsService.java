@@ -1,6 +1,5 @@
 package com.sis.Service;
 
-
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -15,22 +14,28 @@ import java.time.format.DateTimeFormatter;
 @Service
 public class SmsService {
 
+    private final RestTemplate restTemplate; // ← INYECTAR
+
     @Value("${telegram.bot.token}")
     private String botToken;
+
     @Value("${telegram.chat.id}")
     private String chatId;
 
     @Getter
     private int mensajesEnviados = 0;
 
+    // Constructor para inyección
+    public SmsService(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
+    }
+
     public boolean enviarMensaje(String destinatario, String mensaje) {
-        try
-        {
-
+        try {
             String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-            String formatoMensaje = String.format("SMS HOSPITAL\n"+ "Fecha: %s\n" + "Destino: %s\n" + "Mensaje: \n%s", timestamp, destinatario, mensaje);
+            String formatoMensaje = String.format("SMS HOSPITAL\n"+ "Fecha: %s\n" + "Destino: %s\n" + "Mensaje: \n%s",
+                    timestamp, destinatario, mensaje);
 
-            RestTemplate restTemplate = new RestTemplate();
             Map<String, String> body = new HashMap<>();
             body.put("chat_id", chatId);
             body.put("text", formatoMensaje);
@@ -46,14 +51,13 @@ public class SmsService {
                 return true;
             }
             return false;
-        }catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return false;
         }
     }
 
-    private String telegramApi(){
+    private String telegramApi() {
         return "https://api.telegram.org/bot" + botToken + "/sendMessage";
     }
-
 }

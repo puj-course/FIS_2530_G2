@@ -77,6 +77,85 @@ jobs:
           path: target/*.jar
           retention-days: 30
 
+  sonarcloud-analysis:
+    name: SonarCloud Analysis
+    runs-on: ubuntu-latest
+    needs: build-and-test
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Shallow clones should be disabled for better analysis
+
+      - name: ☕ Setup JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          cache: 'maven'
+
+      - name: 🔍 Cache SonarCloud packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+
+      - name: 🔍 Cache Maven packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+
+      - name: 🧪 Run tests with coverage
+        run: mvn clean verify
+
+      - name: 📊 SonarCloud Scan
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          mvn sonar:sonar \
+            -Dsonar.projectKey=puj-course_FIS_2530_G2 \
+            -Dsonar.organization=puj-course \
+            -Dsonar.host.url=https://sonarcloud.io
+
+      - name: 📋 Upload SonarCloud Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sonarcloud-results
+          path: |
+            target/sonar/
+          retention-days: 30
+
+      - name: 💬 Comment PR with SonarCloud Results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const projectKey = 'puj-course_FIS_2530_G2';
+            const sonarUrl = `https://sonarcloud.io/dashboard?id=${projectKey}`;
+            
+            const comment = `## 📊 SonarCloud Analysis Complete
+            
+            **Project:** FIS_2530_G2
+            **Organization:** puj-course
+            
+            🔗 [View detailed results on SonarCloud](${sonarUrl})
+            
+            ---
+            *Analysis triggered by commit ${context.sha.substring(0, 7)}*`;
+            
+            github.rest.issues.createComment({
+              ...context.repo,
+              issue_number: context.issue.number,
+              body: comment
+            });
+
   create-release:
     name: Create GitHub Release
     runs-on: ubuntu-latest
