@@ -1,11 +1,11 @@
 -- =====================================================
--- data.sql - Datos de prueba para tabla usuarios
--- Contraseña de TODOS los usuarios: 123456
+-- data.sql - Datos de prueba para tabla usuario
+-- Contraseña de TODOS los usuario: 123456
 -- Hash bcrypt (cost 12): $2a$12$PJIH5PwGb1VT0tHwmVKevuXFKsAvzkCilsXyoRp67uNVjxc5IkipK
 -- =====================================================
 
 -- USUARIO 1: ADMIN completo
-INSERT INTO usuarios (
+INSERT INTO usuario (
     id, username, hash, nombres, apellidos, email,
     tipo_documento, numero_documento, direccion,
     telefono, tipo_usuario, activo, creado_en
@@ -21,7 +21,7 @@ VALUES (
        );
 
 -- USUARIO 2: información parcial (sin email ni dirección)
-INSERT INTO usuarios (
+INSERT INTO usuario (
     id, username, hash, nombres, apellidos, email,
     tipo_documento, numero_documento, direccion,
     telefono, tipo_usuario, activo, creado_en
@@ -37,7 +37,7 @@ VALUES (
        );
 
 -- USUARIO 3: solo campos obligatorios
-INSERT INTO usuarios (
+INSERT INTO usuario (
     id, username, hash, nombres, apellidos, email,
     tipo_documento, numero_documento, direccion,
     telefono, tipo_usuario, activo, creado_en
@@ -53,7 +53,7 @@ VALUES (
        );
 
 -- USUARIO 4: inactivo
-INSERT INTO usuarios (
+INSERT INTO usuario (
     id, username, hash, nombres, apellidos, email,
     tipo_documento, numero_documento, direccion,
     telefono, tipo_usuario, activo, creado_en
@@ -69,7 +69,7 @@ VALUES (
        );
 
 -- USUARIO 5: tipo documento PASAPORTE
-INSERT INTO usuarios (
+INSERT INTO usuario (
     id, username, hash, nombres, apellidos, email,
     tipo_documento, numero_documento, direccion,
     telefono, tipo_usuario, activo, creado_en
@@ -85,7 +85,7 @@ VALUES (
        );
 
 -- USUARIO 6: recién creado (sin nombres completos aún)
-INSERT INTO usuarios (
+INSERT INTO usuario (
     id, username, hash, nombres, apellidos, email,
     tipo_documento, numero_documento, direccion,
     telefono, tipo_usuario, activo, creado_en
@@ -101,7 +101,7 @@ VALUES (
        );
 
 -- USUARIO 7: con email y sin dirección
-INSERT INTO usuarios (
+INSERT INTO usuario (
     id, username, hash, nombres, apellidos, email,
     tipo_documento, numero_documento, direccion,
     telefono, tipo_usuario, activo, creado_en
@@ -117,7 +117,7 @@ VALUES (
        );
 
 -- USUARIO 8: con dirección y sin email
-INSERT INTO usuarios (
+INSERT INTO usuario (
     id, username, hash, nombres, apellidos, email,
     tipo_documento, numero_documento, direccion,
     telefono, tipo_usuario, activo, creado_en
@@ -133,7 +133,7 @@ VALUES (
        );
 
 -- USUARIO 9: nombre corto
-INSERT INTO usuarios (
+INSERT INTO usuario (
     id, username, hash, nombres, apellidos, email,
     tipo_documento, numero_documento, direccion,
     telefono, tipo_usuario, activo, creado_en
@@ -149,7 +149,7 @@ VALUES (
        );
 
 -- USUARIO 10: nombre largo y completo
-INSERT INTO usuarios (
+INSERT INTO usuario (
     id, username, hash, nombres, apellidos, email,
     tipo_documento, numero_documento, direccion,
     telefono, tipo_usuario, activo, creado_en
@@ -165,7 +165,7 @@ VALUES (
        );
 
 -- USUARIO 11: fecha de creación muy antigua
-INSERT INTO usuarios (
+INSERT INTO usuario (
     id, username, hash, nombres, apellidos, email,
     tipo_documento, numero_documento, direccion,
     telefono, tipo_usuario, activo, creado_en
@@ -181,7 +181,7 @@ VALUES (
        );
 
 -- USUARIO 12: fecha reciente
-INSERT INTO usuarios (
+INSERT INTO usuario (
     id, username, hash, nombres, apellidos, email,
     tipo_documento, numero_documento, direccion,
     telefono, tipo_usuario, activo, creado_en
@@ -197,7 +197,7 @@ VALUES (
        );
 
 -- USUARIO 13: inactivo con todos los datos
-INSERT INTO usuarios (
+INSERT INTO usuario (
     id, username, hash, nombres, apellidos, email,
     tipo_documento, numero_documento, direccion,
     telefono, tipo_usuario, activo, creado_en
@@ -213,7 +213,7 @@ VALUES (
        );
 
 -- USUARIO 14: username muy corto
-INSERT INTO usuarios (
+INSERT INTO usuario (
     id, username, hash, nombres, apellidos, email,
     tipo_documento, numero_documento, direccion,
     telefono, tipo_usuario, activo, creado_en
@@ -229,7 +229,7 @@ VALUES (
        );
 
 -- USUARIO 15: tipo documento RC
-INSERT INTO usuarios (
+INSERT INTO usuario (
     id, username, hash, nombres, apellidos, email,
     tipo_documento, numero_documento, direccion,
     telefono, tipo_usuario, activo, creado_en
@@ -245,11 +245,11 @@ VALUES (
        );
 
 -- =====================================================
--- ENFERMERAS (usuarios + datos específicos)
+-- ENFERMERAS (usuario + datos específicos)
 -- =====================================================
 
 -- Enfermera 1: AUXILIAR
-INSERT INTO usuarios (
+INSERT INTO usuario (
     id, username, hash, nombres, apellidos, email,
     tipo_documento, numero_documento, direccion,
     telefono, tipo_usuario, activo, creado_en
@@ -268,7 +268,7 @@ INSERT INTO enfermeras (id, nivel)
 VALUES ('11111111-1111-1111-1111-111111111111', 'AUXILIAR');
 
 -- Enfermera 2: JEFE
-INSERT INTO usuarios (
+INSERT INTO usuario (
     id, username, hash, nombres, apellidos, email,
     tipo_documento, numero_documento, direccion,
     telefono, tipo_usuario, activo, creado_en
@@ -287,7 +287,7 @@ INSERT INTO enfermeras (id, nivel)
 VALUES ('22222222-2222-2222-2222-222222222222', 'JEFE');
 
 -- Enfermera 3: GENERAL
-INSERT INTO usuarios (
+INSERT INTO usuario (
     id, username, hash, nombres, apellidos, email,
     tipo_documento, numero_documento, direccion,
     telefono, tipo_usuario, activo, creado_en
