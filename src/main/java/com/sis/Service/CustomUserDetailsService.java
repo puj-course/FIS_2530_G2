@@ -24,15 +24,17 @@ public class CustomUserDetailsService implements UserDetailsService {
             throw new UsernameNotFoundException("Usuario inactivo");
         }
 
-        // Aquí podrías agregar roles si tienes una tabla de roles
+        String rolSpring = "ROLE_" + usuario.getTipoUsuario().name();
+
         return User.builder()
                 .username(usuario.getUsername())
-                .password(usuario.getHash()) // Spring Security espera el hash
+                .password(usuario.getHash())
                 .disabled(!usuario.isActivo())
                 .accountExpired(false)
                 .credentialsExpired(false)
                 .accountLocked(false)
-                .roles("USER") // Por ahora rol genérico, puedes mejorarlo
+                .authorities(rolSpring)
                 .build();
     }
+
 }
