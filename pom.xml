@@ -40,7 +40,6 @@
             **/Enum/**,
             **/Interface/**,
             **/Repository/**,
-            **/Config/**,
             **/resources/**,
             **/static/**,
             **/templates/**
@@ -52,8 +51,7 @@
             **/Model/**,
             **/Enum/**,
             **/Interface/**,
-            **/Repository/**,
-            **/Config/**
+            **/Repository/**
         </sonar.coverage.exclusions>
     </properties>
 
