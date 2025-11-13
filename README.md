@@ -1,70 +1,81 @@
 # Sistema Integrado de Salud (SIS)
 <img width="256" height="256" alt="image" src="https://github.com/user-attachments/assets/e99b121c-052c-49d7-a1bf-c85eaedbac23" />
 
-Health Integrated System (SIS) is a desktop application for medical purposes such as:
+Health Integrated System (SIS) is a web application for medical purposes such as:
 
 1. Storing patient data both locally and in the cloud
 2. Consulting information related to a patient
 3. Registering procedures related to a patient
+4. Managing users (patients, doctors, nurses, administrators)
+5. Patient admission and triage processes
+6. Medical consultations, diagnoses, and treatments
 
-Health Integrated System (SIS in spanish) project is being developed as a desktop application for medical purposes such as:
-
-1. Storing pacients data both locally and in a cloud
-2. Letting the user consult information relative to a patient
-3. Storing procedures related to a patient
-
-Our main objetive is to provide a solution so that the hospitals with poor data management can have access to proper tools so that 
-this process is improved. Since we've yet to have plenty iterations with the client, **this may change quite a lot**, regardless the main objetive and course 
-of the project will remain the same.
+Our main objective is to provide a solution so that hospitals with poor data management can have access to proper tools so that this process is improved. Since we've yet to have plenty iterations with the client, **this may change quite a lot**, regardless the main objective and course of the project will remain the same.
 
 SDG's that we directly work on:
 
 ![Image](https://github.com/user-attachments/assets/9fc67283-a14f-4881-a938-1c425f3a2672)
 <img width="150" height="150" alt="Image" src="https://github.com/user-attachments/assets/c629c4f7-1db9-4c1b-a95b-477f63e76c69" />
 
+## Technologies Used
+- **Java 21**
+- **Spring Boot 3.5.6**
+- **Spring Security 6** - Authentication and authorization
+- **Spring Data JPA** - Database operations
+- **Thymeleaf** - Server-side template engine
+- **PostgreSQL 16** - Production database
+- **H2 Database** - Testing database
+- **Docker & Docker Compose** - Containerization
+- **Maven** - Build and dependency management
+- **Lombok** - Code generation utilities
+
 ## Table of Contents
 - [Prerequisites](#prerequisites)
-- [Database Setup with Docker](#database-setup-with-docker)
-- [Installation](#installation)
-- [Usage](#usage)
+- [Installation & Setup](#installation--setup)
+- [Accessing the Application](#accessing-the-application)
 - [Contributors](#contributors)
 
 ## Prerequisites
-- Java 17 installed
+- Java 21 installed
 - Maven installed
-- Docker installed and running
+- Docker and Docker Compose installed and running
 
-## Database Setup with Docker
-To run a PostgreSQL database using Docker, execute:
-```bash
-docker run --name sis_postgres -e POSTGRES_DB=sis_db -e POSTGRES_USER=sis_user -e POSTGRES_PASSWORD=sis_password -p 5432:5432 -d postgres:latest
-```
-This will create a PostgreSQL container with:
-- Database: `sis_db`
-- User: `sis_user`
-- Password: `sis_password`
-- Port: `5432`
+## Installation & Setup
 
-Configure the following environment variables for the application:
-- `SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/sis_db`
-- `SPRING_DATASOURCE_USERNAME=sis_user`
-- `SPRING_DATASOURCE_PASSWORD=sis_password`
-
-## Installation
 1. Clone the repository:
 ```bash
 git clone https://github.com/puj-course/FIS_2530_G2.git
-```
-2. Compile the project using Maven:
-```bash
-mvn clean package
+cd FIS_2530_G2
 ```
 
-## Usage
-To run the project, use the following command:
+2. Compile the project:
 ```bash
-java -jar target/SIS-0.0.1-SNAPSHOT.jar
+mvn clean package -DskipTests
 ```
+
+3. Build Docker images:
+```bash
+docker compose build
+```
+
+4. Start the application:
+```bash
+docker compose up -d
+```
+
+5. Stop the application:
+```bash
+docker compose down
+```
+
+## Accessing the Application
+
+The application requires authentication to access its features. The main entry points are:
+
+- `/login` - User authentication
+- `/register` - New user registration
+
+Once authenticated, users can access different modules based on their role (patient, doctor, nurse, or administrator). The system provides a complete workflow for patient management, from admission and triage to consultation and treatment.
 
 ## Contributors
 * Samuel Bonilla Bravo: SCRUM master

@@ -1,5 +1,6 @@
 package com.sis.Model;
 
+import com.sis.Model.Enum.TipoUsuario;
 import jakarta.persistence.*;
 import com.sis.Model.Enum.TipoDoc;
 import jakarta.persistence.Entity;
@@ -42,6 +43,10 @@ public class Usuario {
     @Column(name = "numero_documento", unique = true, nullable = false, length = 20)
     private String numeroDocumento;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tipo_usuario", nullable = false)
+    private TipoUsuario tipoUsuario;
+
     @Column(length = 200)
     private String direccion;
 
@@ -50,6 +55,10 @@ public class Usuario {
 
     @Column(name = "creado_en", nullable = false, updatable = false)
     private LocalDateTime creadoEn;
+
+    // Campo teléfono agregado
+    @Column(length = 20)
+    private String telefono;
 
     @PrePersist
     protected void onCreate() {
@@ -153,5 +162,22 @@ public class Usuario {
 
     public void setCreadoEn(LocalDateTime creadoEn) {
         this.creadoEn = creadoEn;
+    }
+
+    public TipoUsuario getTipoUsuario() {
+        return tipoUsuario;
+    }
+
+    public void setTipoUsuario(TipoUsuario tipoUsuario) {
+        this.tipoUsuario = tipoUsuario;
+    }
+
+    // Getter y Setter para teléfono
+    public String getTelefono() {
+        return telefono;
+    }
+
+    public void setTelefono(String telefono) {
+        this.telefono = telefono;
     }
 }
