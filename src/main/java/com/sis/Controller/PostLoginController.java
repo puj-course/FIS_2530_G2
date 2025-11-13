@@ -29,13 +29,13 @@ public class PostLoginController {
         switch (rol) {
 
             case "ROLE_ENFERMERA":
-                return "redirect:/admision/dashboard";
+                return "redirect:/enfermera/dashboard";
 
             case "ROLE_DOCTOR":
                 return "redirect:/doctor/dashboard";
 
             case "ROLE_PACIENTE":
-                return "redirect:/dashboard/paciente";
+                return "redirect:/paciente/dashboard";
 
             case "ROLE_ADMIN":
                 return "redirect:/admin/dashboard";
