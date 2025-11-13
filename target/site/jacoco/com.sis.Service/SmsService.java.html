@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SmsService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">sis</a> &gt; <a href="index.source.html" class="el_package">com.sis.Service</a> &gt; <span class="el_source">SmsService.java</span></div><h1>SmsService.java</h1><pre class="source lang-java linenums">package com.sis.Service;
+
+import lombok.Getter;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.http.*;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
+@Service
+public class SmsService {
+
+    private final RestTemplate restTemplate; // ← INYECTAR
+
+    @Value(&quot;${telegram.bot.token}&quot;)
+    private String botToken;
+
+    @Value(&quot;${telegram.chat.id}&quot;)
+    private String chatId;
+
+<span class="fc" id="L25">    @Getter</span>
+    private int mensajesEnviados = 0;
+
+    // Constructor para inyección
+<span class="fc" id="L29">    public SmsService(RestTemplate restTemplate) {</span>
+<span class="fc" id="L30">        this.restTemplate = restTemplate;</span>
+<span class="fc" id="L31">    }</span>
+
+    public boolean enviarMensaje(String destinatario, String mensaje) {
+        try {
+<span class="fc" id="L35">            String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern(&quot;yyyy-MM-dd HH:mm:ss&quot;));</span>
+<span class="fc" id="L36">            String formatoMensaje = String.format(&quot;SMS HOSPITAL\n&quot;+ &quot;Fecha: %s\n&quot; + &quot;Destino: %s\n&quot; + &quot;Mensaje: \n%s&quot;,</span>
+                    timestamp, destinatario, mensaje);
+
+<span class="fc" id="L39">            Map&lt;String, String&gt; body = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L40">            body.put(&quot;chat_id&quot;, chatId);</span>
+<span class="fc" id="L41">            body.put(&quot;text&quot;, formatoMensaje);</span>
+
+<span class="fc" id="L43">            HttpHeaders headers = new HttpHeaders();</span>
+<span class="fc" id="L44">            headers.setContentType(MediaType.APPLICATION_JSON);</span>
+
+<span class="fc" id="L46">            HttpEntity&lt;Map&gt; request = new HttpEntity&lt;&gt;(body, headers);</span>
+<span class="fc" id="L47">            ResponseEntity&lt;String&gt; response = restTemplate.postForEntity(telegramApi(), request, String.class);</span>
+
+<span class="fc bfc" id="L49" title="All 2 branches covered.">            if (response.getStatusCode() == HttpStatus.OK) {</span>
+<span class="fc" id="L50">                mensajesEnviados++;</span>
+<span class="fc" id="L51">                return true;</span>
+            }
+<span class="fc" id="L53">            return false;</span>
+<span class="fc" id="L54">        } catch (Exception e) {</span>
+<span class="fc" id="L55">            e.printStackTrace();</span>
+<span class="fc" id="L56">            return false;</span>
+        }
+    }
+
+    private String telegramApi() {
+<span class="fc" id="L61">        return &quot;https://api.telegram.org/bot&quot; + botToken + &quot;/sendMessage&quot;;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

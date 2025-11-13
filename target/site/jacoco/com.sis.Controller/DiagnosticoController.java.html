@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DiagnosticoController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">sis</a> &gt; <a href="index.source.html" class="el_package">com.sis.Controller</a> &gt; <span class="el_source">DiagnosticoController.java</span></div><h1>DiagnosticoController.java</h1><pre class="source lang-java linenums">package com.sis.Controller;
+
+import com.sis.Model.Consulta;
+import com.sis.Model.Diagnostico;
+import com.sis.Model.Tratamiento;
+import com.sis.Model.Medicamento;
+import com.sis.Model.DiagnosticoMedicamento;
+import com.sis.Model.Enum.TipoEvento;
+import com.sis.Patterns.Mediator.IRegistroMedicoMediator;
+import com.sis.Repository.ConsultaRepo;
+import com.sis.Repository.MedicamentoRepo;
+import com.sis.Repository.DiagnosticoRepo;
+import com.sis.Repository.TratamientoRepo;
+import com.sis.Repository.DiagMedRepo;
+import com.sis.Service.EventBus;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.UUID;
+
+@Controller
+@RequestMapping(&quot;/diagnostico&quot;)
+<span class="nc" id="L26">public class DiagnosticoController {</span>
+
+    @Autowired
+    private IRegistroMedicoMediator mediator;
+
+    @Autowired
+    private EventBus eventBus;
+
+    @Autowired
+    private ConsultaRepo consultaRepo;
+
+    @Autowired
+    private MedicamentoRepo medicamentoRepo;
+
+    @Autowired
+    private DiagnosticoRepo diagnosticoRepo;
+
+    @Autowired
+    private TratamientoRepo tratamientoRepo;
+
+    @Autowired
+    private DiagMedRepo diagMedRepo;
+
+    @GetMapping(&quot;/registrar/{consultaId}&quot;)
+    public String mostrarFormularioDiagnostico(@PathVariable UUID consultaId, Model model) {
+        try {
+<span class="nc" id="L52">            Consulta consulta = consultaRepo.findById(consultaId)</span>
+<span class="nc" id="L53">                    .orElseThrow(() -&gt; new Exception(&quot;Consulta no encontrada&quot;));</span>
+
+<span class="nc" id="L55">            model.addAttribute(&quot;consulta&quot;, consulta);</span>
+<span class="nc" id="L56">            model.addAttribute(&quot;paciente&quot;, consulta.getPaciente());</span>
+
+            // Cargar diagnósticos existentes
+<span class="nc" id="L59">            List&lt;Diagnostico&gt; diagnosticos = diagnosticoRepo.findByConsulta(consultaId);</span>
+<span class="nc" id="L60">            model.addAttribute(&quot;diagnosticos&quot;, diagnosticos);</span>
+
+<span class="nc" id="L62">            return &quot;diagnostico/formulario&quot;;</span>
+<span class="nc" id="L63">        } catch (Exception e) {</span>
+<span class="nc" id="L64">            model.addAttribute(&quot;error&quot;, &quot;Error al cargar formulario: &quot; + e.getMessage());</span>
+<span class="nc" id="L65">            return &quot;redirect:/consulta/pendientes&quot;;</span>
+        }
+    }
+
+    @PostMapping(&quot;/registrar&quot;)
+    public String registrarDiagnostico(
+            @RequestParam UUID consultaId,
+            @RequestParam String descripcion,
+            Model model) {
+
+        try {
+<span class="nc" id="L76">            Consulta consulta = consultaRepo.findById(consultaId)</span>
+<span class="nc" id="L77">                    .orElseThrow(() -&gt; new Exception(&quot;Consulta no encontrada&quot;));</span>
+
+            // Usar Mediator Pattern para registrar diagnóstico
+<span class="nc" id="L80">            Diagnostico diagnostico = mediator.registrarDiagnostico(consulta, descripcion);</span>
+
+            // Publicar evento - YA ESTÁ EN EL MEDIATOR, no necesitas publicarlo aquí
+            // El mediator ya publica DIAGNOSTICO_REGISTRADO y DIAGNOSTICO_LISTO
+
+<span class="nc" id="L85">            model.addAttribute(&quot;mensaje&quot;, &quot;Diagnóstico registrado exitosamente&quot;);</span>
+<span class="nc" id="L86">            model.addAttribute(&quot;diagnosticoId&quot;, diagnostico.getId());</span>
+
+<span class="nc" id="L88">            return &quot;redirect:/diagnostico/detalle/&quot; + diagnostico.getId();</span>
+
+<span class="nc" id="L90">        } catch (Exception e) {</span>
+<span class="nc" id="L91">            model.addAttribute(&quot;error&quot;, &quot;Error al registrar diagnóstico: &quot; + e.getMessage());</span>
+<span class="nc" id="L92">            return mostrarFormularioDiagnostico(consultaId, model);</span>
+        }
+    }
+
+    @GetMapping(&quot;/detalle/{diagnosticoId}&quot;)
+    public String verDetalleDiagnostico(@PathVariable UUID diagnosticoId, Model model) {
+        try {
+<span class="nc" id="L99">            Diagnostico diagnostico = diagnosticoRepo.findById(diagnosticoId)</span>
+<span class="nc" id="L100">                    .orElseThrow(() -&gt; new Exception(&quot;Diagnóstico no encontrado&quot;));</span>
+
+            // Cargar tratamientos
+<span class="nc" id="L103">            List&lt;Tratamiento&gt; tratamientos = tratamientoRepo.findByDiagnostico(diagnosticoId);</span>
+
+            // Cargar medicamentos prescritos
+<span class="nc" id="L106">            List&lt;DiagnosticoMedicamento&gt; medicamentos = diagMedRepo.findByDiagnostico(diagnosticoId);</span>
+
+<span class="nc" id="L108">            model.addAttribute(&quot;diagnostico&quot;, diagnostico);</span>
+<span class="nc" id="L109">            model.addAttribute(&quot;tratamientos&quot;, tratamientos);</span>
+<span class="nc" id="L110">            model.addAttribute(&quot;medicamentos&quot;, medicamentos);</span>
+
+            // Lista de medicamentos disponibles para prescribir
+<span class="nc" id="L113">            List&lt;Medicamento&gt; medicamentosDisponibles = medicamentoRepo.findAll();</span>
+<span class="nc" id="L114">            model.addAttribute(&quot;medicamentosDisponibles&quot;, medicamentosDisponibles);</span>
+
+<span class="nc" id="L116">            return &quot;diagnostico/detalle&quot;;</span>
+<span class="nc" id="L117">        } catch (Exception e) {</span>
+<span class="nc" id="L118">            model.addAttribute(&quot;error&quot;, &quot;Error al cargar detalle: &quot; + e.getMessage());</span>
+<span class="nc" id="L119">            return &quot;redirect:/consulta/pendientes&quot;;</span>
+        }
+    }
+
+    @PostMapping(&quot;/tratamiento/agregar&quot;)
+    public String prescribirTratamiento(
+            @RequestParam UUID diagnosticoId,
+            @RequestParam String indicacion,
+            Model model) {
+
+        try {
+<span class="nc" id="L130">            Diagnostico diagnostico = diagnosticoRepo.findById(diagnosticoId)</span>
+<span class="nc" id="L131">                    .orElseThrow(() -&gt; new Exception(&quot;Diagnóstico no encontrado&quot;));</span>
+
+            // Usar Mediator Pattern para agregar tratamiento
+<span class="nc" id="L134">            Tratamiento tratamiento = mediator.agregarTratamiento(diagnostico, indicacion);</span>
+
+            // YA NO NECESITAS PUBLICAR - El mediator lo hace automáticamente
+
+<span class="nc" id="L138">            model.addAttribute(&quot;mensaje&quot;, &quot;Tratamiento agregado exitosamente&quot;);</span>
+<span class="nc" id="L139">            return &quot;redirect:/diagnostico/detalle/&quot; + diagnosticoId;</span>
+
+<span class="nc" id="L141">        } catch (Exception e) {</span>
+<span class="nc" id="L142">            model.addAttribute(&quot;error&quot;, &quot;Error al agregar tratamiento: &quot; + e.getMessage());</span>
+<span class="nc" id="L143">            return verDetalleDiagnostico(diagnosticoId, model);</span>
+        }
+    }
+
+    @PostMapping(&quot;/medicamento/prescribir&quot;)
+    public String prescribirMedicamento(
+            @RequestParam UUID diagnosticoId,
+            @RequestParam UUID medicamentoId,
+            @RequestParam String dosis,
+            @RequestParam String frecuencia,
+            @RequestParam String duracion,
+            @RequestParam(required = false) String indicaciones,
+            Model model) {
+
+        try {
+<span class="nc" id="L158">            Diagnostico diagnostico = diagnosticoRepo.findById(diagnosticoId)</span>
+<span class="nc" id="L159">                    .orElseThrow(() -&gt; new Exception(&quot;Diagnóstico no encontrado&quot;));</span>
+
+<span class="nc" id="L161">            Medicamento medicamento = medicamentoRepo.findById(medicamentoId)</span>
+<span class="nc" id="L162">                    .orElseThrow(() -&gt; new Exception(&quot;Medicamento no encontrado&quot;));</span>
+
+            // Usar Mediator Pattern para prescribir medicamento
+<span class="nc" id="L165">            DiagnosticoMedicamento diagMedicamento = mediator.prescribirMedicamento(</span>
+                    diagnostico, medicamento, dosis, frecuencia, duracion, indicaciones);
+
+            // YA NO NECESITAS PUBLICAR - El mediator lo hace automáticamente
+
+<span class="nc" id="L170">            model.addAttribute(&quot;mensaje&quot;, &quot;Medicamento prescrito exitosamente&quot;);</span>
+<span class="nc" id="L171">            return &quot;redirect:/diagnostico/detalle/&quot; + diagnosticoId;</span>
+
+<span class="nc" id="L173">        } catch (Exception e) {</span>
+<span class="nc" id="L174">            model.addAttribute(&quot;error&quot;, &quot;Error al prescribir medicamento: &quot; + e.getMessage());</span>
+<span class="nc" id="L175">            return verDetalleDiagnostico(diagnosticoId, model);</span>
+        }
+    }
+
+    @PostMapping(&quot;/medicamento/eliminar/{diagMedicamentoId}&quot;)
+    public String eliminarMedicamento(
+            @PathVariable UUID diagMedicamentoId,
+            @RequestParam UUID diagnosticoId,
+            Model model) {
+
+        try {
+<span class="nc" id="L186">            diagMedRepo.deleteById(diagMedicamentoId);</span>
+
+<span class="nc" id="L188">            model.addAttribute(&quot;mensaje&quot;, &quot;Medicamento eliminado de la prescripción&quot;);</span>
+<span class="nc" id="L189">            return &quot;redirect:/diagnostico/detalle/&quot; + diagnosticoId;</span>
+
+<span class="nc" id="L191">        } catch (Exception e) {</span>
+<span class="nc" id="L192">            model.addAttribute(&quot;error&quot;, &quot;Error al eliminar medicamento: &quot; + e.getMessage());</span>
+<span class="nc" id="L193">            return &quot;redirect:/diagnostico/detalle/&quot; + diagnosticoId;</span>
+        }
+    }
+
+    @GetMapping(&quot;/buscar-medicamento&quot;)
+    @ResponseBody
+    public List&lt;Medicamento&gt; buscarMedicamento(@RequestParam String nombre) {
+        try {
+<span class="nc" id="L201">            return medicamentoRepo.findByNombre(nombre);</span>
+<span class="nc" id="L202">        } catch (Exception e) {</span>
+<span class="nc" id="L203">            return List.of();</span>
+        }
+    }
+
+    @PostMapping(&quot;/actualizar&quot;)
+    public String actualizarDiagnostico(
+            @RequestParam UUID diagnosticoId,
+            @RequestParam String descripcion,
+            Model model) {
+
+        try {
+<span class="nc" id="L214">            Diagnostico diagnostico = diagnosticoRepo.findById(diagnosticoId)</span>
+<span class="nc" id="L215">                    .orElseThrow(() -&gt; new Exception(&quot;Diagnóstico no encontrado&quot;));</span>
+
+<span class="nc" id="L217">            diagnostico.setDescripcion(descripcion);</span>
+<span class="nc" id="L218">            diagnosticoRepo.save(diagnostico);</span>
+
+            // Publicar evento - CORREGIDO: Usar TipoEvento
+<span class="nc" id="L221">            eventBus.publicar(TipoEvento.DIAGNOSTICO_ACTUALIZADO, diagnostico);</span>
+
+<span class="nc" id="L223">            model.addAttribute(&quot;mensaje&quot;, &quot;Diagnóstico actualizado exitosamente&quot;);</span>
+<span class="nc" id="L224">            return &quot;redirect:/diagnostico/detalle/&quot; + diagnosticoId;</span>
+
+<span class="nc" id="L226">        } catch (Exception e) {</span>
+<span class="nc" id="L227">            model.addAttribute(&quot;error&quot;, &quot;Error al actualizar diagnóstico: &quot; + e.getMessage());</span>
+<span class="nc" id="L228">            return verDetalleDiagnostico(diagnosticoId, model);</span>
+        }
+    }
+
+    @GetMapping(&quot;/consulta/{consultaId}/lista&quot;)
+    public String listarDiagnosticosPorConsulta(@PathVariable UUID consultaId, Model model) {
+        try {
+<span class="nc" id="L235">            Consulta consulta = consultaRepo.findById(consultaId)</span>
+<span class="nc" id="L236">                    .orElseThrow(() -&gt; new Exception(&quot;Consulta no encontrada&quot;));</span>
+
+<span class="nc" id="L238">            List&lt;Diagnostico&gt; diagnosticos = diagnosticoRepo.findByConsulta(consultaId);</span>
+
+<span class="nc" id="L240">            model.addAttribute(&quot;consulta&quot;, consulta);</span>
+<span class="nc" id="L241">            model.addAttribute(&quot;diagnosticos&quot;, diagnosticos);</span>
+
+<span class="nc" id="L243">            return &quot;diagnostico/lista&quot;;</span>
+<span class="nc" id="L244">        } catch (Exception e) {</span>
+<span class="nc" id="L245">            model.addAttribute(&quot;error&quot;, &quot;Error al listar diagnósticos: &quot; + e.getMessage());</span>
+<span class="nc" id="L246">            return &quot;redirect:/consulta/pendientes&quot;;</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

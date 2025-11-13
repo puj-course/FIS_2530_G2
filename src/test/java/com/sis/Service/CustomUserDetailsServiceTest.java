@@ -1,5 +1,6 @@
 package com.sis.Service;
 
+import com.sis.Model.Enum.TipoUsuario;
 import com.sis.Model.Usuario;
 import com.sis.Repository.UsuarioRepo;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,7 +15,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -36,12 +36,14 @@ class CustomUserDetailsServiceTest {
         usuarioActivo.setUsername("testuser");
         usuarioActivo.setHash("$2a$10$hashedPassword");
         usuarioActivo.setActivo(true);
+        usuarioActivo.setTipoUsuario(TipoUsuario.PACIENTE); // ← AGREGAR ESTO
 
         // Usuario inactivo para las pruebas
         usuarioInactivo = new Usuario();
         usuarioInactivo.setUsername("inactiveuser");
         usuarioInactivo.setHash("$2a$10$hashedPassword");
         usuarioInactivo.setActivo(false);
+        usuarioInactivo.setTipoUsuario(TipoUsuario.PACIENTE); // ← AGREGAR ESTO
     }
 
     @Test
@@ -62,7 +64,7 @@ class CustomUserDetailsServiceTest {
         assertTrue(userDetails.isCredentialsNonExpired());
         assertTrue(userDetails.isAccountNonLocked());
         assertTrue(userDetails.getAuthorities().stream()
-                .anyMatch(auth -> auth.getAuthority().equals("ROLE_USER")));
+                .anyMatch(auth -> auth.getAuthority().equals("ROLE_PACIENTE"))); // ← CAMBIAR AQUI
 
         verify(usuarioRepo, times(1)).findByUsername(username);
     }
@@ -129,7 +131,7 @@ class CustomUserDetailsServiceTest {
     }
 
     @Test
-    void loadUserByUsername_DebeAsignarRolUSER() {
+    void loadUserByUsername_DebeAsignarRolPACIENTE() {
         // Arrange
         String username = "testuser";
         when(usuarioRepo.findByUsername(username)).thenReturn(Optional.of(usuarioActivo));
@@ -140,7 +142,7 @@ class CustomUserDetailsServiceTest {
         // Assert
         assertEquals(1, userDetails.getAuthorities().size());
         assertTrue(userDetails.getAuthorities().stream()
-                .anyMatch(auth -> auth.getAuthority().equals("ROLE_USER")));
+                .anyMatch(auth -> auth.getAuthority().equals("ROLE_PACIENTE"))); // ← CAMBIAR AQUI
 
         verify(usuarioRepo, times(1)).findByUsername(username);
     }
@@ -174,5 +176,63 @@ class CustomUserDetailsServiceTest {
         );
 
         verify(usuarioRepo, times(1)).findByUsername(username);
+    }
+
+    // ========== TESTS ADICIONALES PARA DIFERENTES TIPOS DE USUARIO ==========
+
+    @Test
+    void loadUserByUsername_CuandoEsDoctor_DebeAsignarRolDOCTOR() {
+        // Arrange
+        Usuario doctor = new Usuario();
+        doctor.setUsername("doctor");
+        doctor.setHash("$2a$10$hash");
+        doctor.setActivo(true);
+        doctor.setTipoUsuario(TipoUsuario.DOCTOR);
+
+        when(usuarioRepo.findByUsername("doctor")).thenReturn(Optional.of(doctor));
+
+        // Act
+        UserDetails userDetails = customUserDetailsService.loadUserByUsername("doctor");
+
+        // Assert
+        assertTrue(userDetails.getAuthorities().stream()
+                .anyMatch(auth -> auth.getAuthority().equals("ROLE_DOCTOR")));
+    }
+
+    @Test
+    void loadUserByUsername_CuandoEsEnfermera_DebeAsignarRolENFERMERA() {
+        // Arrange
+        Usuario enfermera = new Usuario();
+        enfermera.setUsername("enfermera");
+        enfermera.setHash("$2a$10$hash");
+        enfermera.setActivo(true);
+        enfermera.setTipoUsuario(TipoUsuario.ENFERMERA);
+
+        when(usuarioRepo.findByUsername("enfermera")).thenReturn(Optional.of(enfermera));
+
+        // Act
+        UserDetails userDetails = customUserDetailsService.loadUserByUsername("enfermera");
+
+        // Assert
+        assertTrue(userDetails.getAuthorities().stream()
+                .anyMatch(auth -> auth.getAuthority().equals("ROLE_ENFERMERA")));
+    }
+
+    @Test
+    void loadUserByUsername_CuandoTipoUsuarioEsNull_DebeLanzarExcepcion() {
+        // Arrange
+        Usuario usuarioSinTipo = new Usuario();
+        usuarioSinTipo.setUsername("sinTipo");
+        usuarioSinTipo.setHash("$2a$10$hash");
+        usuarioSinTipo.setActivo(true);
+        usuarioSinTipo.setTipoUsuario(null); // ← Sin tipo de usuario
+
+        when(usuarioRepo.findByUsername("sinTipo")).thenReturn(Optional.of(usuarioSinTipo));
+
+        // Act & Assert
+        assertThrows(
+                NullPointerException.class,
+                () -> customUserDetailsService.loadUserByUsername("sinTipo")
+        );
     }
 }

@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Consulta.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">sis</a> &gt; <a href="index.source.html" class="el_package">com.sis.Model</a> &gt; <span class="el_source">Consulta.java</span></div><h1>Consulta.java</h1><pre class="source lang-java linenums">package com.sis.Model;
+
+import jakarta.persistence.*;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+@Entity
+@Table(name = &quot;consultas&quot;)
+public class Consulta {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(columnDefinition = &quot;uuid&quot;)
+    private UUID id;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = &quot;ticket_id&quot;, nullable = false, unique = true)
+    private TicketAdmision ticket;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = &quot;paciente_id&quot;, nullable = false)
+    private Paciente paciente;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = &quot;doctor_id&quot;, nullable = false)
+    private Doctor doctor;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = &quot;enfermera_id&quot;)
+    private Enfermera enfermera;
+
+    @Column(name = &quot;fecha_hora&quot;, nullable = false)
+    private LocalDateTime fechaHora;
+
+    @Column(columnDefinition = &quot;TEXT&quot;)
+    private String motivo;
+
+    @PrePersist
+    protected void onCreate() {
+<span class="nc bnc" id="L40" title="All 2 branches missed.">        if (fechaHora == null) {</span>
+<span class="nc" id="L41">            fechaHora = LocalDateTime.now();</span>
+        }
+<span class="nc" id="L43">    }</span>
+
+<span class="nc" id="L45">    public Consulta() {</span>
+<span class="nc" id="L46">    }</span>
+
+    public UUID getId() {
+<span class="nc" id="L49">        return id;</span>
+    }
+
+    public void setId(UUID id) {
+<span class="nc" id="L53">        this.id = id;</span>
+<span class="nc" id="L54">    }</span>
+
+    public TicketAdmision getTicket() {
+<span class="nc" id="L57">        return ticket;</span>
+    }
+
+    public void setTicket(TicketAdmision ticket) {
+<span class="nc" id="L61">        this.ticket = ticket;</span>
+<span class="nc" id="L62">    }</span>
+
+    public Paciente getPaciente() {
+<span class="nc" id="L65">        return paciente;</span>
+    }
+
+    public void setPaciente(Paciente paciente) {
+<span class="nc" id="L69">        this.paciente = paciente;</span>
+<span class="nc" id="L70">    }</span>
+
+    public Doctor getDoctor() {
+<span class="nc" id="L73">        return doctor;</span>
+    }
+
+    public void setDoctor(Doctor doctor) {
+<span class="nc" id="L77">        this.doctor = doctor;</span>
+<span class="nc" id="L78">    }</span>
+
+    public Enfermera getEnfermera() {
+<span class="nc" id="L81">        return enfermera;</span>
+    }
+
+    public void setEnfermera(Enfermera enfermera) {
+<span class="nc" id="L85">        this.enfermera = enfermera;</span>
+<span class="nc" id="L86">    }</span>
+
+    public LocalDateTime getFechaHora() {
+<span class="nc" id="L89">        return fechaHora;</span>
+    }
+
+    public void setFechaHora(LocalDateTime fechaHora) {
+<span class="nc" id="L93">        this.fechaHora = fechaHora;</span>
+<span class="nc" id="L94">    }</span>
+
+    public String getMotivo() {
+<span class="nc" id="L97">        return motivo;</span>
+    }
+
+    public void setMotivo(String motivo) {
+<span class="nc" id="L101">        this.motivo = motivo;</span>
+<span class="nc" id="L102">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

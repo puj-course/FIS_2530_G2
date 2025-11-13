@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UsuarioRegistroService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">sis</a> &gt; <a href="index.source.html" class="el_package">com.sis.Service</a> &gt; <span class="el_source">UsuarioRegistroService.java</span></div><h1>UsuarioRegistroService.java</h1><pre class="source lang-java linenums">package com.sis.Service;
+
+import com.sis.DTO.UsuarioRegistroDTO;
+import com.sis.Model.Usuario;
+import com.sis.Repository.UsuarioRepo;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.HashMap;
+import java.util.Map;
+
+@Service
+<span class="fc" id="L15">public class UsuarioRegistroService {</span>
+
+    @Autowired
+    private UsuarioRepo usuarioRepo;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    /**
+     * Valida los datos del formulario de registro
+     * @param dto Datos del usuario a registrar
+     * @return Map con errores (vacío si no hay errores)
+     */
+    public Map&lt;String, String&gt; validarRegistro(UsuarioRegistroDTO dto) {
+<span class="fc" id="L29">        Map&lt;String, String&gt; errores = new HashMap&lt;&gt;();</span>
+
+        // Validar que las contraseñas coincidan
+<span class="fc bfc" id="L32" title="All 2 branches covered.">        if (!dto.getPassword().equals(dto.getConfirmPassword())) {</span>
+<span class="fc" id="L33">            errores.put(&quot;password&quot;, &quot;Las contraseñas no coinciden&quot;);</span>
+        }
+
+        // Validar username único
+<span class="fc bfc" id="L37" title="All 2 branches covered.">        if (usuarioRepo.existsByUsername(dto.getUsername())) {</span>
+<span class="fc" id="L38">            errores.put(&quot;username&quot;, &quot;El nombre de usuario ya existe&quot;);</span>
+        }
+
+        // Validar documento único
+<span class="fc bfc" id="L42" title="All 2 branches covered.">        if (usuarioRepo.existsByNumeroDocumento(dto.getNumeroDocumento())) {</span>
+<span class="fc" id="L43">            errores.put(&quot;numeroDocumento&quot;, &quot;El número de documento ya está registrado&quot;);</span>
+        }
+
+        // Validar email único (si se proporciona)
+<span class="fc bfc" id="L47" title="All 4 branches covered.">        if (dto.getEmail() != null &amp;&amp; !dto.getEmail().isEmpty()) {</span>
+<span class="fc bfc" id="L48" title="All 2 branches covered.">            if (usuarioRepo.existsByEmail(dto.getEmail())) {</span>
+<span class="fc" id="L49">                errores.put(&quot;email&quot;, &quot;El email ya está registrado&quot;);</span>
+            }
+        }
+
+<span class="fc" id="L53">        return errores;</span>
+    }
+
+    /**
+     * Registra un nuevo usuario en el sistema
+     * @param dto Datos del usuario a registrar
+     * @return Usuario registrado
+     */
+    @Transactional
+    public Usuario registrarUsuario(UsuarioRegistroDTO dto) {
+        // Crear nueva instancia de Usuario
+<span class="fc" id="L64">        Usuario usuario = new Usuario();</span>
+
+        // Mapear datos básicos
+<span class="fc" id="L67">        usuario.setUsername(dto.getUsername());</span>
+<span class="fc" id="L68">        usuario.setNombres(dto.getNombres());</span>
+<span class="fc" id="L69">        usuario.setApellidos(dto.getApellidos());</span>
+<span class="fc" id="L70">        usuario.setEmail(dto.getEmail());</span>
+<span class="fc" id="L71">        usuario.setTipoDocumento(dto.getTipoDocumento());</span>
+<span class="fc" id="L72">        usuario.setNumeroDocumento(dto.getNumeroDocumento());</span>
+<span class="fc" id="L73">        usuario.setDireccion(dto.getDireccion());</span>
+<span class="fc" id="L74">        usuario.setTipoUsuario(dto.getTipoUsuario());</span>
+
+        // ⭐ IMPORTANTE: Hashear la contraseña con BCrypt antes de guardar
+<span class="fc" id="L77">        String passwordHash = passwordEncoder.encode(dto.getPassword());</span>
+<span class="fc" id="L78">        usuario.setHash(passwordHash);</span>
+
+        // Usuario activo por defecto
+<span class="fc" id="L81">        usuario.setActivo(true);</span>
+
+        // Guardar en la base de datos
+<span class="fc" id="L84">        return usuarioRepo.save(usuario);</span>
+    }
+
+    /**
+     * Verifica si un username ya existe
+     */
+    public boolean usernameExiste(String username) {
+<span class="fc" id="L91">        return usuarioRepo.existsByUsername(username);</span>
+    }
+
+    /**
+     * Verifica si un documento ya existe
+     */
+    public boolean documentoExiste(String numeroDocumento) {
+<span class="fc" id="L98">        return usuarioRepo.existsByNumeroDocumento(numeroDocumento);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

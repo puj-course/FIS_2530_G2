@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UsuarioRegistroDTO.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">sis</a> &gt; <a href="index.source.html" class="el_package">com.sis.DTO</a> &gt; <span class="el_source">UsuarioRegistroDTO.java</span></div><h1>UsuarioRegistroDTO.java</h1><pre class="source lang-java linenums">package com.sis.DTO;
+
+import com.sis.Model.Enum.TipoDoc;
+import com.sis.Model.Enum.TipoUsuario;
+import jakarta.validation.constraints.*;
+
+public class UsuarioRegistroDTO {
+
+    @NotBlank(message = &quot;El nombre de usuario es obligatorio&quot;)
+    @Size(min = 4, max = 50, message = &quot;El usuario debe tener entre 4 y 50 caracteres&quot;)
+    private String username;
+
+    @NotBlank(message = &quot;La contraseña es obligatoria&quot;)
+    @Size(min = 6, message = &quot;La contraseña debe tener al menos 6 caracteres&quot;)
+    private String password;
+
+    @NotBlank(message = &quot;Debes confirmar la contraseña&quot;)
+    private String confirmPassword;
+
+    @NotBlank(message = &quot;Los nombres son obligatorios&quot;)
+    @Size(max = 100)
+    private String nombres;
+
+    @NotBlank(message = &quot;Los apellidos son obligatorios&quot;)
+    @Size(max = 100)
+    private String apellidos;
+
+    @Email(message = &quot;El email debe ser válido&quot;)
+    @Size(max = 100)
+    private String email;
+
+    @NotNull(message = &quot;El tipo de documento es obligatorio&quot;)
+    private TipoDoc tipoDocumento;
+
+    @NotBlank(message = &quot;El número de documento es obligatorio&quot;)
+    @Size(max = 20)
+    private String numeroDocumento;
+
+    @Size(max = 200)
+    private String direccion;
+
+    @NotNull(message = &quot;Debes seleccionar un tipo de usuario&quot;)
+    private TipoUsuario tipoUsuario;
+
+    // Constructores
+<span class="fc" id="L46">    public UsuarioRegistroDTO() {</span>
+<span class="fc" id="L47">    }</span>
+
+    // Getters y Setters
+    public String getUsername() {
+<span class="fc" id="L51">        return username;</span>
+    }
+
+    public void setUsername(String username) {
+<span class="fc" id="L55">        this.username = username;</span>
+<span class="fc" id="L56">    }</span>
+
+    public String getPassword() {
+<span class="fc" id="L59">        return password;</span>
+    }
+
+    public void setPassword(String password) {
+<span class="fc" id="L63">        this.password = password;</span>
+<span class="fc" id="L64">    }</span>
+
+    public String getConfirmPassword() {
+<span class="fc" id="L67">        return confirmPassword;</span>
+    }
+
+    public void setConfirmPassword(String confirmPassword) {
+<span class="fc" id="L71">        this.confirmPassword = confirmPassword;</span>
+<span class="fc" id="L72">    }</span>
+
+    public String getNombres() {
+<span class="fc" id="L75">        return nombres;</span>
+    }
+
+    public void setNombres(String nombres) {
+<span class="fc" id="L79">        this.nombres = nombres;</span>
+<span class="fc" id="L80">    }</span>
+
+    public String getApellidos() {
+<span class="fc" id="L83">        return apellidos;</span>
+    }
+
+    public void setApellidos(String apellidos) {
+<span class="fc" id="L87">        this.apellidos = apellidos;</span>
+<span class="fc" id="L88">    }</span>
+
+    public String getEmail() {
+<span class="fc" id="L91">        return email;</span>
+    }
+
+    public void setEmail(String email) {
+<span class="fc" id="L95">        this.email = email;</span>
+<span class="fc" id="L96">    }</span>
+
+    public TipoDoc getTipoDocumento() {
+<span class="fc" id="L99">        return tipoDocumento;</span>
+    }
+
+    public void setTipoDocumento(TipoDoc tipoDocumento) {
+<span class="fc" id="L103">        this.tipoDocumento = tipoDocumento;</span>
+<span class="fc" id="L104">    }</span>
+
+    public String getNumeroDocumento() {
+<span class="fc" id="L107">        return numeroDocumento;</span>
+    }
+
+    public void setNumeroDocumento(String numeroDocumento) {
+<span class="fc" id="L111">        this.numeroDocumento = numeroDocumento;</span>
+<span class="fc" id="L112">    }</span>
+
+    public String getDireccion() {
+<span class="fc" id="L115">        return direccion;</span>
+    }
+
+    public void setDireccion(String direccion) {
+<span class="fc" id="L119">        this.direccion = direccion;</span>
+<span class="fc" id="L120">    }</span>
+
+    public TipoUsuario getTipoUsuario() {
+<span class="fc" id="L123">        return tipoUsuario;</span>
+    }
+
+    public void setTipoUsuario(TipoUsuario tipoUsuario) {
+<span class="fc" id="L127">        this.tipoUsuario = tipoUsuario;</span>
+<span class="fc" id="L128">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

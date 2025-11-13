@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.sis.Controller.LoginControllerTest
+-------------------------------------------------------------------------------
+Tests run: 16, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.295 s -- in com.sis.Controller.LoginControllerTest

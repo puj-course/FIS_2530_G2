@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AdmisionController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">sis</a> &gt; <a href="index.source.html" class="el_package">com.sis.Controller</a> &gt; <span class="el_source">AdmisionController.java</span></div><h1>AdmisionController.java</h1><pre class="source lang-java linenums">package com.sis.Controller;
+
+import com.sis.Model.TicketAdmision;
+import com.sis.Model.Paciente;
+import com.sis.Model.Enfermera;
+import com.sis.Model.Enum.EstadoTicket;
+import com.sis.Model.Enum.TipoEvento;
+import com.sis.Repository.TicketRepo;
+import com.sis.Repository.PacienteRepo;
+import com.sis.Service.EventBus;
+import jakarta.servlet.http.HttpSession;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
+
+        import java.util.List;
+import java.util.UUID;
+
+/**
+ * Controlador para gestionar el proceso de admisión de pacientes
+ */
+@Controller
+@RequestMapping(&quot;/admision&quot;)
+<span class="nc" id="L25">public class AdmisionController {</span>
+
+    @Autowired
+    private TicketRepo ticketRepo;
+
+    @Autowired
+    private PacienteRepo pacienteRepo;
+
+    @Autowired
+    private EventBus eventBus;
+
+    /**
+     * Muestra el formulario para crear un nuevo ticket de admisión
+     */
+    @GetMapping(&quot;/crear-ticket&quot;)
+    public String mostrarFormularioTicket(
+            @RequestParam(required = false) UUID pacienteId,
+            Model model) {
+
+        try {
+<span class="nc bnc" id="L45" title="All 2 branches missed.">            if (pacienteId != null) {</span>
+<span class="nc" id="L46">                Paciente paciente = pacienteRepo.findById(pacienteId)</span>
+<span class="nc" id="L47">                        .orElseThrow(() -&gt; new Exception(&quot;Paciente no encontrado&quot;));</span>
+<span class="nc" id="L48">                model.addAttribute(&quot;paciente&quot;, paciente);</span>
+            }
+
+            // Lista de pacientes para seleccionar
+<span class="nc" id="L52">            List&lt;Paciente&gt; pacientes = pacienteRepo.findAllActivos();</span>
+<span class="nc" id="L53">            model.addAttribute(&quot;pacientes&quot;, pacientes);</span>
+
+<span class="nc" id="L55">            return &quot;admision/crear-ticket&quot;;</span>
+<span class="nc" id="L56">        } catch (Exception e) {</span>
+<span class="nc" id="L57">            model.addAttribute(&quot;error&quot;, &quot;Error al cargar formulario: &quot; + e.getMessage());</span>
+<span class="nc" id="L58">            return &quot;redirect:/admision/dashboard&quot;;</span>
+        }
+    }
+
+    /**
+     * Crea un nuevo ticket de admisión
+     */
+    @PostMapping(&quot;/crear-ticket&quot;)
+    public String crearTicket(
+            @RequestParam UUID pacienteId,
+            HttpSession session,
+            Model model) {
+
+        try {
+<span class="nc" id="L72">            Paciente paciente = pacienteRepo.findById(pacienteId)</span>
+<span class="nc" id="L73">                    .orElseThrow(() -&gt; new Exception(&quot;Paciente no encontrado&quot;));</span>
+
+<span class="nc" id="L75">            Enfermera enfermera = (Enfermera) session.getAttribute(&quot;usuario&quot;);</span>
+<span class="nc bnc" id="L76" title="All 2 branches missed.">            if (enfermera == null) {</span>
+<span class="nc" id="L77">                return &quot;redirect:/login?error=sesion&quot;;</span>
+            }
+
+            // Crear ticket de admisión
+<span class="nc" id="L81">            TicketAdmision ticket = new TicketAdmision();</span>
+<span class="nc" id="L82">            ticket.setPaciente(paciente);</span>
+<span class="nc" id="L83">            ticket.setEnfermera(enfermera);</span>
+<span class="nc" id="L84">            ticket.setEstado(EstadoTicket.PENDIENTE);</span>
+
+<span class="nc" id="L86">            TicketAdmision ticketGuardado = ticketRepo.save(ticket);</span>
+
+            // Publicar evento usando Observer Pattern
+<span class="nc" id="L89">            eventBus.publicar(TipoEvento.TICKET_CREADO, ticketGuardado);</span>
+<span class="nc" id="L90">            eventBus.publicar(TipoEvento.PACIENTE_LLEGADA,</span>
+<span class="nc" id="L91">                    &quot;Paciente: &quot; + paciente.getNombreCompleto() + &quot; - Ticket: &quot; + ticketGuardado.getId());</span>
+
+<span class="nc" id="L93">            model.addAttribute(&quot;mensaje&quot;, &quot;Ticket creado exitosamente&quot;);</span>
+<span class="nc" id="L94">            model.addAttribute(&quot;ticketId&quot;, ticketGuardado.getId());</span>
+
+<span class="nc" id="L96">            return &quot;redirect:/triage/formulario/&quot; + ticketGuardado.getId();</span>
+
+<span class="nc" id="L98">        } catch (Exception e) {</span>
+<span class="nc" id="L99">            model.addAttribute(&quot;error&quot;, &quot;Error al crear ticket: &quot; + e.getMessage());</span>
+<span class="nc" id="L100">            return mostrarFormularioTicket(pacienteId, model);</span>
+        }
+    }
+
+    /**
+     * Dashboard de admisión con estadísticas
+     */
+    @GetMapping(&quot;/dashboard&quot;)
+    public String mostrarDashboard(Model model, HttpSession session) {
+        try {
+<span class="nc" id="L110">            Enfermera enfermera = (Enfermera) session.getAttribute(&quot;usuario&quot;);</span>
+
+            // Estadísticas generales
+<span class="nc" id="L113">            long ticketsPendientes = ticketRepo.countByEstado(EstadoTicket.PENDIENTE);</span>
+<span class="nc" id="L114">            long ticketsEnTriage = ticketRepo.countByEstado(EstadoTicket.EN_TRIAGE);</span>
+<span class="nc" id="L115">            long ticketsEnConsulta = ticketRepo.countByEstado(EstadoTicket.EN_CONSULTA);</span>
+<span class="nc" id="L116">            long ticketsCompletados = ticketRepo.countByEstado(EstadoTicket.COMPLETADO);</span>
+
+<span class="nc" id="L118">            model.addAttribute(&quot;ticketsPendientes&quot;, ticketsPendientes);</span>
+<span class="nc" id="L119">            model.addAttribute(&quot;ticketsEnTriage&quot;, ticketsEnTriage);</span>
+<span class="nc" id="L120">            model.addAttribute(&quot;ticketsEnConsulta&quot;, ticketsEnConsulta);</span>
+<span class="nc" id="L121">            model.addAttribute(&quot;ticketsCompletados&quot;, ticketsCompletados);</span>
+
+            // Tickets de la enfermera actual
+<span class="nc bnc" id="L124" title="All 2 branches missed.">            if (enfermera != null) {</span>
+<span class="nc" id="L125">                List&lt;TicketAdmision&gt; misTickets = ticketRepo.findByEnfermera(enfermera.getId());</span>
+<span class="nc" id="L126">                model.addAttribute(&quot;misTickets&quot;, misTickets);</span>
+            }
+
+<span class="nc" id="L129">            return &quot;admision/dashboard&quot;;</span>
+<span class="nc" id="L130">        } catch (Exception e) {</span>
+<span class="nc" id="L131">            model.addAttribute(&quot;error&quot;, &quot;Error al cargar dashboard: &quot; + e.getMessage());</span>
+<span class="nc" id="L132">            return &quot;error/500&quot;;</span>
+        }
+    }
+
+    /**
+     * Lista todos los tickets de admisión
+     */
+    @GetMapping(&quot;/tickets&quot;)
+    public String listarTickets(
+            @RequestParam(required = false) EstadoTicket estado,
+            Model model) {
+
+        try {
+            List&lt;TicketAdmision&gt; tickets;
+
+<span class="nc bnc" id="L147" title="All 2 branches missed.">            if (estado != null) {</span>
+<span class="nc" id="L148">                tickets = ticketRepo.findByEstado(estado);</span>
+            } else {
+<span class="nc" id="L150">                tickets = ticketRepo.findAll();</span>
+            }
+
+<span class="nc" id="L153">            model.addAttribute(&quot;tickets&quot;, tickets);</span>
+<span class="nc" id="L154">            model.addAttribute(&quot;estados&quot;, EstadoTicket.values());</span>
+<span class="nc" id="L155">            model.addAttribute(&quot;estadoFiltro&quot;, estado);</span>
+
+<span class="nc" id="L157">            return &quot;admision/lista-tickets&quot;;</span>
+<span class="nc" id="L158">        } catch (Exception e) {</span>
+<span class="nc" id="L159">            model.addAttribute(&quot;error&quot;, &quot;Error al cargar tickets: &quot; + e.getMessage());</span>
+<span class="nc" id="L160">            return &quot;redirect:/admision/dashboard&quot;;</span>
+        }
+    }
+
+    /**
+     * Ver detalle de un ticket
+     */
+    @GetMapping(&quot;/ticket/{ticketId}&quot;)
+    public String verDetalleTicket(@PathVariable UUID ticketId, Model model) {
+        try {
+<span class="nc" id="L170">            TicketAdmision ticket = ticketRepo.findById(ticketId)</span>
+<span class="nc" id="L171">                    .orElseThrow(() -&gt; new Exception(&quot;Ticket no encontrado&quot;));</span>
+
+<span class="nc" id="L173">            model.addAttribute(&quot;ticket&quot;, ticket);</span>
+<span class="nc" id="L174">            model.addAttribute(&quot;paciente&quot;, ticket.getPaciente());</span>
+<span class="nc" id="L175">            model.addAttribute(&quot;enfermera&quot;, ticket.getEnfermera());</span>
+
+<span class="nc" id="L177">            return &quot;admision/detalle-ticket&quot;;</span>
+<span class="nc" id="L178">        } catch (Exception e) {</span>
+<span class="nc" id="L179">            model.addAttribute(&quot;error&quot;, &quot;Error al cargar detalle: &quot; + e.getMessage());</span>
+<span class="nc" id="L180">            return &quot;redirect:/admision/tickets&quot;;</span>
+        }
+    }
+
+    /**
+     * Actualizar estado de un ticket
+     */
+    @PostMapping(&quot;/ticket/actualizar-estado&quot;)
+    @ResponseBody
+    public String actualizarEstadoTicket(
+            @RequestParam UUID ticketId,
+            @RequestParam EstadoTicket nuevoEstado) {
+
+        try {
+<span class="nc" id="L194">            TicketAdmision ticket = ticketRepo.findById(ticketId)</span>
+<span class="nc" id="L195">                    .orElseThrow(() -&gt; new Exception(&quot;Ticket no encontrado&quot;));</span>
+
+<span class="nc" id="L197">            ticket.setEstado(nuevoEstado);</span>
+<span class="nc" id="L198">            ticketRepo.save(ticket);</span>
+
+            // Publicar evento
+<span class="nc" id="L201">            eventBus.publicar(TipoEvento.ESTADO_TICKET_ACTUALIZADO, ticket);</span>
+
+<span class="nc" id="L203">            return &quot;{\&quot;success\&quot;: true, \&quot;message\&quot;: \&quot;Estado actualizado a &quot; + nuevoEstado + &quot;\&quot;}&quot;;</span>
+<span class="nc" id="L204">        } catch (Exception e) {</span>
+<span class="nc" id="L205">            return &quot;{\&quot;success\&quot;: false, \&quot;message\&quot;: \&quot;Error: &quot; + e.getMessage() + &quot;\&quot;}&quot;;</span>
+        }
+    }
+
+    /**
+     * Cancelar un ticket
+     */
+    @PostMapping(&quot;/ticket/cancelar/{ticketId}&quot;)
+    public String cancelarTicket(@PathVariable UUID ticketId, Model model) {
+        try {
+<span class="nc" id="L215">            TicketAdmision ticket = ticketRepo.findById(ticketId)</span>
+<span class="nc" id="L216">                    .orElseThrow(() -&gt; new Exception(&quot;Ticket no encontrado&quot;));</span>
+
+<span class="nc" id="L218">            ticket.setEstado(EstadoTicket.CANCELAD);</span>
+<span class="nc" id="L219">            ticketRepo.save(ticket);</span>
+
+            // Publicar evento
+<span class="nc" id="L222">            eventBus.publicar(TipoEvento.TICKET_CANCELADO, ticket);</span>
+
+<span class="nc" id="L224">            model.addAttribute(&quot;mensaje&quot;, &quot;Ticket cancelado exitosamente&quot;);</span>
+<span class="nc" id="L225">            return &quot;redirect:/admision/tickets&quot;;</span>
+<span class="nc" id="L226">        } catch (Exception e) {</span>
+<span class="nc" id="L227">            model.addAttribute(&quot;error&quot;, &quot;Error al cancelar ticket: &quot; + e.getMessage());</span>
+<span class="nc" id="L228">            return &quot;redirect:/admision/ticket/&quot; + ticketId;</span>
+        }
+    }
+
+    /**
+     * Buscar pacientes para admisión
+     */
+    @GetMapping(&quot;/buscar-paciente&quot;)
+    @ResponseBody
+    public List&lt;Paciente&gt; buscarPaciente(@RequestParam String query) {
+        try {
+            // Buscar por nombre o número de documento
+<span class="nc" id="L240">            List&lt;Paciente&gt; porNombre = pacienteRepo.buscarPorNombre(query);</span>
+
+<span class="nc bnc" id="L242" title="All 2 branches missed.">            if (!porNombre.isEmpty()) {</span>
+<span class="nc" id="L243">                return porNombre;</span>
+            }
+
+            // Si no encuentra por nombre, buscar por documento
+<span class="nc" id="L247">            return pacienteRepo.findByNumeroDocumento(query)</span>
+<span class="nc" id="L248">                    .map(List::of)</span>
+<span class="nc" id="L249">                    .orElse(List.of());</span>
+<span class="nc" id="L250">        } catch (Exception e) {</span>
+<span class="nc" id="L251">            return List.of();</span>
+        }
+    }
+
+    /**
+     * Mis tickets (para enfermeras)
+     */
+    @GetMapping(&quot;/mis-tickets&quot;)
+    public String listarMisTickets(Model model, HttpSession session) {
+        try {
+<span class="nc" id="L261">            Enfermera enfermera = (Enfermera) session.getAttribute(&quot;usuario&quot;);</span>
+<span class="nc bnc" id="L262" title="All 2 branches missed.">            if (enfermera == null) {</span>
+<span class="nc" id="L263">                return &quot;redirect:/login&quot;;</span>
+            }
+
+<span class="nc" id="L266">            List&lt;TicketAdmision&gt; misTickets = ticketRepo.findByEnfermera(enfermera.getId());</span>
+<span class="nc" id="L267">            model.addAttribute(&quot;tickets&quot;, misTickets);</span>
+
+<span class="nc" id="L269">            return &quot;admision/mis-tickets&quot;;</span>
+<span class="nc" id="L270">        } catch (Exception e) {</span>
+<span class="nc" id="L271">            model.addAttribute(&quot;error&quot;, &quot;Error al cargar tickets: &quot; + e.getMessage());</span>
+<span class="nc" id="L272">            return &quot;redirect:/admision/dashboard&quot;;</span>
+        }
+    }
+
+    /**
+     * Tickets por paciente
+     */
+    @GetMapping(&quot;/paciente/{pacienteId}/tickets&quot;)
+    public String listarTicketsPorPaciente(@PathVariable UUID pacienteId, Model model) {
+        try {
+<span class="nc" id="L282">            Paciente paciente = pacienteRepo.findById(pacienteId)</span>
+<span class="nc" id="L283">                    .orElseThrow(() -&gt; new Exception(&quot;Paciente no encontrado&quot;));</span>
+
+<span class="nc" id="L285">            List&lt;TicketAdmision&gt; tickets = ticketRepo.findByPaciente(pacienteId);</span>
+
+<span class="nc" id="L287">            model.addAttribute(&quot;paciente&quot;, paciente);</span>
+<span class="nc" id="L288">            model.addAttribute(&quot;tickets&quot;, tickets);</span>
+
+<span class="nc" id="L290">            return &quot;admision/tickets-paciente&quot;;</span>
+<span class="nc" id="L291">        } catch (Exception e) {</span>
+<span class="nc" id="L292">            model.addAttribute(&quot;error&quot;, &quot;Error al cargar tickets: &quot; + e.getMessage());</span>
+<span class="nc" id="L293">            return &quot;redirect:/admision/tickets&quot;;</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

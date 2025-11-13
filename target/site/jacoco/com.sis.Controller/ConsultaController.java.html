@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ConsultaController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">sis</a> &gt; <a href="index.source.html" class="el_package">com.sis.Controller</a> &gt; <span class="el_source">ConsultaController.java</span></div><h1>ConsultaController.java</h1><pre class="source lang-java linenums">package com.sis.Controller;
+
+import com.sis.Model.Consulta;
+import com.sis.Model.Paciente;
+import com.sis.Model.Doctor;
+import com.sis.Model.TicketAdmision;
+import com.sis.Model.Enum.EstadoTicket;
+import com.sis.Patterns.Strategy.IExportadorHistoria;
+import com.sis.Patterns.Strategy.ExportadorHTML;
+import com.sis.Patterns.Strategy.ExportadorPDF;
+import com.sis.Patterns.Prototype.PacientePrototype;
+import com.sis.Repository.ConsultaRepo;
+import com.sis.Repository.PacienteRepo;
+import com.sis.Repository.TicketRepo;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
+
+        import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
+
+@Controller
+@RequestMapping(&quot;/consulta&quot;)
+<span class="nc" id="L29">public class ConsultaController {</span>
+
+    @Autowired
+    private ConsultaRepo consultaRepo;
+
+    @Autowired
+    private PacienteRepo pacienteRepo;
+
+    @Autowired
+    private TicketRepo ticketRepo;
+
+    private IExportadorHistoria exportador;
+
+    @GetMapping(&quot;/pendientes&quot;)
+    public String listarConsultasPendientes(Model model, HttpSession session) {
+        try {
+<span class="nc" id="L45">            List&lt;TicketAdmision&gt; ticketsPendientes = ticketRepo.findByEstado(EstadoTicket.EN_TRIAGE);</span>
+<span class="nc" id="L46">            model.addAttribute(&quot;tickets&quot;, ticketsPendientes);</span>
+<span class="nc" id="L47">            return &quot;consulta/lista-pendientes&quot;;</span>
+<span class="nc" id="L48">        } catch (Exception e) {</span>
+<span class="nc" id="L49">            model.addAttribute(&quot;error&quot;, &quot;Error al cargar consultas: &quot; + e.getMessage());</span>
+<span class="nc" id="L50">            return &quot;error/500&quot;;</span>
+        }
+    }
+
+    @GetMapping(&quot;/iniciar/{ticketId}&quot;)
+    public String iniciarConsulta(
+            @PathVariable UUID ticketId,
+            Model model,
+            HttpSession session) {
+
+        try {
+<span class="nc" id="L61">            TicketAdmision ticket = ticketRepo.findById(ticketId)</span>
+<span class="nc" id="L62">                    .orElseThrow(() -&gt; new Exception(&quot;Ticket no encontrado&quot;));</span>
+
+<span class="nc" id="L64">            Doctor doctor = (Doctor) session.getAttribute(&quot;usuario&quot;);</span>
+<span class="nc bnc" id="L65" title="All 2 branches missed.">            if (doctor == null) {</span>
+<span class="nc" id="L66">                return &quot;redirect:/login?error=sesion&quot;;</span>
+            }
+
+            // Crear nueva consulta
+<span class="nc" id="L70">            Consulta consulta = new Consulta();</span>
+<span class="nc" id="L71">            consulta.setTicket(ticket);</span>
+<span class="nc" id="L72">            consulta.setPaciente(ticket.getPaciente());</span>
+<span class="nc" id="L73">            consulta.setDoctor(doctor);</span>
+<span class="nc" id="L74">            consulta.setEnfermera(ticket.getEnfermera());</span>
+<span class="nc" id="L75">            consulta.setFechaHora(LocalDateTime.now());</span>
+
+<span class="nc" id="L77">            Consulta consultaGuardada = consultaRepo.save(consulta);</span>
+
+            // Actualizar estado del ticket
+<span class="nc" id="L80">            ticket.setEstado(EstadoTicket.EN_CONSULTA);</span>
+<span class="nc" id="L81">            ticketRepo.save(ticket);</span>
+
+<span class="nc" id="L83">            model.addAttribute(&quot;consulta&quot;, consultaGuardada);</span>
+<span class="nc" id="L84">            return &quot;redirect:/consulta/formulario/&quot; + consultaGuardada.getId();</span>
+
+<span class="nc" id="L86">        } catch (Exception e) {</span>
+<span class="nc" id="L87">            model.addAttribute(&quot;error&quot;, &quot;Error al iniciar consulta: &quot; + e.getMessage());</span>
+<span class="nc" id="L88">            return &quot;redirect:/consulta/pendientes&quot;;</span>
+        }
+    }
+
+    @GetMapping(&quot;/formulario/{consultaId}&quot;)
+    public String mostrarFormularioConsulta(@PathVariable UUID consultaId, Model model) {
+        try {
+<span class="nc" id="L95">            Consulta consulta = consultaRepo.findById(consultaId)</span>
+<span class="nc" id="L96">                    .orElseThrow(() -&gt; new Exception(&quot;Consulta no encontrada&quot;));</span>
+
+<span class="nc" id="L98">            model.addAttribute(&quot;consulta&quot;, consulta);</span>
+<span class="nc" id="L99">            model.addAttribute(&quot;paciente&quot;, consulta.getPaciente());</span>
+<span class="nc" id="L100">            model.addAttribute(&quot;triage&quot;, consulta.getTicket().getTriage());</span>
+
+<span class="nc" id="L102">            return &quot;consulta/formulario&quot;;</span>
+<span class="nc" id="L103">        } catch (Exception e) {</span>
+<span class="nc" id="L104">            model.addAttribute(&quot;error&quot;, &quot;Error al cargar consulta: &quot; + e.getMessage());</span>
+<span class="nc" id="L105">            return &quot;redirect:/consulta/pendientes&quot;;</span>
+        }
+    }
+
+    @PostMapping(&quot;/actualizar&quot;)
+    public String actualizarConsulta(
+            @RequestParam UUID consultaId,
+            @RequestParam String motivo,
+            Model model) {
+
+        try {
+<span class="nc" id="L116">            Consulta consulta = consultaRepo.findById(consultaId)</span>
+<span class="nc" id="L117">                    .orElseThrow(() -&gt; new Exception(&quot;Consulta no encontrada&quot;));</span>
+
+<span class="nc" id="L119">            consulta.setMotivo(motivo);</span>
+<span class="nc" id="L120">            consultaRepo.save(consulta);</span>
+
+<span class="nc" id="L122">            model.addAttribute(&quot;mensaje&quot;, &quot;Consulta actualizada exitosamente&quot;);</span>
+<span class="nc" id="L123">            return &quot;redirect:/diagnostico/registrar/&quot; + consultaId;</span>
+
+<span class="nc" id="L125">        } catch (Exception e) {</span>
+<span class="nc" id="L126">            model.addAttribute(&quot;error&quot;, &quot;Error al actualizar consulta: &quot; + e.getMessage());</span>
+<span class="nc" id="L127">            return mostrarFormularioConsulta(consultaId, model);</span>
+        }
+    }
+
+    @GetMapping(&quot;/historial/{pacienteId}&quot;)
+    public String consultarHistorial(@PathVariable UUID pacienteId, Model model) {
+        try {
+<span class="nc" id="L134">            Paciente paciente = pacienteRepo.findById(pacienteId)</span>
+<span class="nc" id="L135">                    .orElseThrow(() -&gt; new Exception(&quot;Paciente no encontrado&quot;));</span>
+
+<span class="nc" id="L137">            List&lt;Consulta&gt; consultas = consultaRepo.findByPaciente(pacienteId);</span>
+
+<span class="nc" id="L139">            model.addAttribute(&quot;paciente&quot;, paciente);</span>
+<span class="nc" id="L140">            model.addAttribute(&quot;consultas&quot;, consultas);</span>
+
+<span class="nc" id="L142">            return &quot;consulta/historial&quot;;</span>
+<span class="nc" id="L143">        } catch (Exception e) {</span>
+<span class="nc" id="L144">            model.addAttribute(&quot;error&quot;, &quot;Error al consultar historial: &quot; + e.getMessage());</span>
+<span class="nc" id="L145">            return &quot;error/500&quot;;</span>
+        }
+    }
+
+    @GetMapping(&quot;/exportar/{pacienteId}&quot;)
+    public void exportarHistorial(
+            @PathVariable UUID pacienteId,
+            @RequestParam(defaultValue = &quot;html&quot;) String formato,
+            HttpServletResponse response) throws IOException {
+
+        try {
+<span class="nc" id="L156">            Paciente paciente = pacienteRepo.findById(pacienteId)</span>
+<span class="nc" id="L157">                    .orElseThrow(() -&gt; new Exception(&quot;Paciente no encontrado&quot;));</span>
+
+<span class="nc" id="L159">            List&lt;Consulta&gt; consultas = consultaRepo.findByPaciente(pacienteId);</span>
+
+            // Strategy Pattern: Seleccionar exportador según formato
+<span class="nc bnc" id="L162" title="All 2 branches missed.">            if (formato.equalsIgnoreCase(&quot;pdf&quot;)) {</span>
+<span class="nc" id="L163">                exportador = new ExportadorPDF();</span>
+            } else {
+<span class="nc" id="L165">                exportador = new ExportadorHTML();</span>
+            }
+
+<span class="nc" id="L168">            String contenido = exportador.exportar(paciente, consultas);</span>
+
+            // Configurar respuesta HTTP
+<span class="nc" id="L171">            response.setContentType(exportador.getMimeType());</span>
+<span class="nc" id="L172">            response.setHeader(&quot;Content-Disposition&quot;,</span>
+<span class="nc" id="L173">                    &quot;attachment; filename=historial_&quot; + paciente.getNumeroDocumento() +</span>
+<span class="nc" id="L174">                            &quot;.&quot; + exportador.getExtension());</span>
+
+<span class="nc" id="L176">            response.getWriter().write(contenido);</span>
+<span class="nc" id="L177">            response.getWriter().flush();</span>
+
+<span class="nc" id="L179">        } catch (Exception e) {</span>
+<span class="nc" id="L180">            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);</span>
+<span class="nc" id="L181">            response.getWriter().write(&quot;Error al exportar: &quot; + e.getMessage());</span>
+<span class="nc" id="L182">        }</span>
+<span class="nc" id="L183">    }</span>
+
+    @GetMapping(&quot;/mis-consultas&quot;)
+    public String listarMisConsultas(Model model, HttpSession session) {
+        try {
+<span class="nc" id="L188">            Doctor doctor = (Doctor) session.getAttribute(&quot;usuario&quot;);</span>
+<span class="nc bnc" id="L189" title="All 2 branches missed.">            if (doctor == null) {</span>
+<span class="nc" id="L190">                return &quot;redirect:/login&quot;;</span>
+            }
+
+<span class="nc" id="L193">            List&lt;Consulta&gt; consultas = consultaRepo.findByDoctor(doctor.getId());</span>
+<span class="nc" id="L194">            model.addAttribute(&quot;consultas&quot;, consultas);</span>
+
+<span class="nc" id="L196">            return &quot;consulta/mis-consultas&quot;;</span>
+<span class="nc" id="L197">        } catch (Exception e) {</span>
+<span class="nc" id="L198">            model.addAttribute(&quot;error&quot;, &quot;Error al cargar consultas: &quot; + e.getMessage());</span>
+<span class="nc" id="L199">            return &quot;error/500&quot;;</span>
+        }
+    }
+
+    @PostMapping(&quot;/clonar-paciente&quot;)
+    @ResponseBody
+    public String clonarPacienteProvisional(@RequestParam UUID pacienteId) {
+        try {
+<span class="nc" id="L207">            Paciente pacienteOriginal = pacienteRepo.findById(pacienteId)</span>
+<span class="nc" id="L208">                    .orElseThrow(() -&gt; new Exception(&quot;Paciente no encontrado&quot;));</span>
+
+            // Prototype Pattern: Clonar paciente para registro rápido
+<span class="nc" id="L211">            PacientePrototype prototype = new PacientePrototype(pacienteOriginal);</span>
+<span class="nc" id="L212">            Paciente pacienteClonado = prototype.clone();</span>
+
+<span class="nc" id="L214">            Paciente guardado = pacienteRepo.save(pacienteClonado);</span>
+
+<span class="nc" id="L216">            return &quot;{\&quot;success\&quot;: true, \&quot;message\&quot;: \&quot;Paciente clonado\&quot;, \&quot;pacienteId\&quot;: \&quot;&quot; + guardado.getId() + &quot;\&quot;}&quot;;</span>
+<span class="nc" id="L217">        } catch (Exception e) {</span>
+<span class="nc" id="L218">            return &quot;{\&quot;success\&quot;: false, \&quot;message\&quot;: \&quot;Error: &quot; + e.getMessage() + &quot;\&quot;}&quot;;</span>
+        }
+    }
+
+    @GetMapping(&quot;/finalizar/{consultaId}&quot;)
+    public String finalizarConsulta(@PathVariable UUID consultaId, Model model) {
+        try {
+<span class="nc" id="L225">            Consulta consulta = consultaRepo.findById(consultaId)</span>
+<span class="nc" id="L226">                    .orElseThrow(() -&gt; new Exception(&quot;Consulta no encontrada&quot;));</span>
+
+            // Actualizar estado del ticket a COMPLETADO
+<span class="nc" id="L229">            TicketAdmision ticket = consulta.getTicket();</span>
+<span class="nc" id="L230">            ticket.setEstado(EstadoTicket.COMPLETADO);</span>
+<span class="nc" id="L231">            ticketRepo.save(ticket);</span>
+
+<span class="nc" id="L233">            model.addAttribute(&quot;mensaje&quot;, &quot;Consulta finalizada exitosamente&quot;);</span>
+<span class="nc" id="L234">            return &quot;redirect:/consulta/pendientes&quot;;</span>
+
+<span class="nc" id="L236">        } catch (Exception e) {</span>
+<span class="nc" id="L237">            model.addAttribute(&quot;error&quot;, &quot;Error al finalizar consulta: &quot; + e.getMessage());</span>
+<span class="nc" id="L238">            return &quot;redirect:/consulta/pendientes&quot;;</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

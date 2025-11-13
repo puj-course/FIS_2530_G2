@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RegistroMedicoMediator.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">sis</a> &gt; <a href="index.source.html" class="el_package">com.sis.Patterns.Mediator</a> &gt; <span class="el_source">RegistroMedicoMediator.java</span></div><h1>RegistroMedicoMediator.java</h1><pre class="source lang-java linenums">package com.sis.Patterns.Mediator;
+
+import com.sis.Model.*;
+        import com.sis.Model.Enum.TipoEvento;
+import com.sis.Repository.DiagnosticoRepo;
+import com.sis.Repository.TratamientoRepo;
+import com.sis.Repository.DiagMedRepo;
+import com.sis.Service.EventBus;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+@Component
+<span class="nc" id="L13">public class RegistroMedicoMediator implements IRegistroMedicoMediator {</span>
+
+    @Autowired
+    private DiagnosticoRepo diagnosticoRepo;
+
+    @Autowired
+    private TratamientoRepo tratamientoRepo;
+
+    @Autowired
+    private DiagMedRepo diagMedicamentoRepo;
+
+    @Autowired
+    private EventBus eventBus;
+
+    @Override
+    public Diagnostico registrarDiagnostico(Consulta consulta, String descripcion) {
+<span class="nc" id="L29">        Diagnostico diagnostico = new Diagnostico();</span>
+<span class="nc" id="L30">        diagnostico.setConsulta(consulta);</span>
+<span class="nc" id="L31">        diagnostico.setDescripcion(descripcion);</span>
+
+<span class="nc" id="L33">        Diagnostico guardado = diagnosticoRepo.save(diagnostico);</span>
+
+        // Notificar usando TipoEvento
+<span class="nc" id="L36">        eventBus.publicar(TipoEvento.DIAGNOSTICO_REGISTRADO, guardado);</span>
+<span class="nc" id="L37">        eventBus.publicar(TipoEvento.DIAGNOSTICO_LISTO,</span>
+<span class="nc" id="L38">                &quot;Diagnóstico para paciente: &quot; + consulta.getPaciente().getNombreCompleto());</span>
+
+<span class="nc" id="L40">        return guardado;</span>
+    }
+
+    @Override
+    public Tratamiento agregarTratamiento(Diagnostico diagnostico, String indicacion) {
+<span class="nc" id="L45">        Tratamiento tratamiento = new Tratamiento();</span>
+<span class="nc" id="L46">        tratamiento.setDiagnostico(diagnostico);</span>
+<span class="nc" id="L47">        tratamiento.setIndicacion(indicacion);</span>
+
+<span class="nc" id="L49">        Tratamiento guardado = tratamientoRepo.save(tratamiento);</span>
+
+        // Notificar
+<span class="nc" id="L52">        eventBus.publicar(TipoEvento.TRATAMIENTO_AGREGADO, guardado);</span>
+
+<span class="nc" id="L54">        return guardado;</span>
+    }
+
+    @Override
+    public DiagnosticoMedicamento prescribirMedicamento(
+            Diagnostico diagnostico,
+            Medicamento medicamento,
+            String dosis,
+            String frecuencia,
+            String duracion,
+            String indicaciones) {
+
+<span class="nc" id="L66">        DiagnosticoMedicamento diagMedicamento = new DiagnosticoMedicamento();</span>
+<span class="nc" id="L67">        diagMedicamento.setDiagnostico(diagnostico);</span>
+<span class="nc" id="L68">        diagMedicamento.setMedicamento(medicamento);</span>
+<span class="nc" id="L69">        diagMedicamento.setDosis(dosis);</span>
+<span class="nc" id="L70">        diagMedicamento.setFrecuencia(frecuencia);</span>
+<span class="nc" id="L71">        diagMedicamento.setDuracion(duracion);</span>
+<span class="nc" id="L72">        diagMedicamento.setIndicaciones(indicaciones);</span>
+
+<span class="nc" id="L74">        DiagnosticoMedicamento guardado = diagMedicamentoRepo.save(diagMedicamento);</span>
+
+        // Notificar
+<span class="nc" id="L77">        eventBus.publicar(TipoEvento.MEDICAMENTO_PRESCRITO,</span>
+<span class="nc" id="L78">                medicamento.getNombre() + &quot; - &quot; + dosis + &quot; &quot; + frecuencia);</span>
+
+<span class="nc" id="L80">        return guardado;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

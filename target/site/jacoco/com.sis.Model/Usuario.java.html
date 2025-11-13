@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Usuario.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">sis</a> &gt; <a href="index.source.html" class="el_package">com.sis.Model</a> &gt; <span class="el_source">Usuario.java</span></div><h1>Usuario.java</h1><pre class="source lang-java linenums">package com.sis.Model;
+
+import com.sis.Model.Enum.TipoUsuario;
+import jakarta.persistence.*;
+import com.sis.Model.Enum.TipoDoc;
+import jakarta.persistence.Entity;
+import org.springframework.data.annotation.Id;
+import org.springframework.stereotype.Component;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+@Entity
+@Table(name = &quot;usuario&quot;)
+@Inheritance(strategy = InheritanceType.JOINED)
+public class Usuario {
+
+    @jakarta.persistence.Id
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(columnDefinition = &quot;uuid&quot;)
+    private UUID id;
+
+    @Column(unique = true, nullable = false, length = 50)
+    private String username;
+
+    @Column(nullable = false)
+    private String hash;
+
+    @Column(nullable = false, length = 100)
+    private String nombres;
+
+    @Column(nullable = false, length = 100)
+    private String apellidos;
+
+    @Column(length = 100)
+    private String email;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = &quot;tipo_documento&quot;, nullable = false)
+    private TipoDoc tipoDocumento;
+
+    @Column(name = &quot;numero_documento&quot;, unique = true, nullable = false, length = 20)
+    private String numeroDocumento;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = &quot;tipo_usuario&quot;, nullable = false)
+    private TipoUsuario tipoUsuario;
+
+    @Column(length = 200)
+    private String direccion;
+
+<span class="fc" id="L53">    @Column(nullable = false)</span>
+    private boolean activo = true;
+
+    @Column(name = &quot;creado_en&quot;, nullable = false, updatable = false)
+    private LocalDateTime creadoEn;
+
+    // Campo teléfono agregado
+    @Column(length = 20)
+    private String telefono;
+
+    @PrePersist
+    protected void onCreate() {
+<span class="fc bfc" id="L65" title="All 2 branches covered.">        if (creadoEn == null) {</span>
+<span class="fc" id="L66">            creadoEn = LocalDateTime.now();</span>
+        }
+<span class="fc" id="L68">    }</span>
+
+    // Constructor
+<span class="fc" id="L71">    public Usuario() {</span>
+<span class="fc" id="L72">    }</span>
+
+    // Getters y Setters
+    public UUID getId() {
+<span class="fc" id="L76">        return id;</span>
+    }
+
+    public void setId(UUID id) {
+<span class="fc" id="L80">        this.id = id;</span>
+<span class="fc" id="L81">    }</span>
+
+    public String getUsername() {
+<span class="fc" id="L84">        return username;</span>
+    }
+
+    public void setUsername(String username) {
+<span class="fc" id="L88">        this.username = username;</span>
+<span class="fc" id="L89">    }</span>
+
+    public String getHash() {
+<span class="fc" id="L92">        return hash;</span>
+    }
+
+    public void setHash(String hash) {
+<span class="fc" id="L96">        this.hash = hash;</span>
+<span class="fc" id="L97">    }</span>
+
+    public String getNombres() {
+<span class="fc" id="L100">        return nombres;</span>
+    }
+
+    public void setNombres(String nombres) {
+<span class="fc" id="L104">        this.nombres = nombres;</span>
+<span class="fc" id="L105">    }</span>
+
+    public String getApellidos() {
+<span class="fc" id="L108">        return apellidos;</span>
+    }
+
+    public void setApellidos(String apellidos) {
+<span class="fc" id="L112">        this.apellidos = apellidos;</span>
+<span class="fc" id="L113">    }</span>
+
+    public String getNombreCompleto() {
+<span class="fc" id="L116">        return nombres + &quot; &quot; + apellidos;</span>
+    }
+
+    public String getEmail() {
+<span class="fc" id="L120">        return email;</span>
+    }
+
+    public void setEmail(String email) {
+<span class="fc" id="L124">        this.email = email;</span>
+<span class="fc" id="L125">    }</span>
+
+    public TipoDoc getTipoDocumento() {
+<span class="fc" id="L128">        return tipoDocumento;</span>
+    }
+
+    public void setTipoDocumento(TipoDoc tipoDocumento) {
+<span class="fc" id="L132">        this.tipoDocumento = tipoDocumento;</span>
+<span class="fc" id="L133">    }</span>
+
+    public String getNumeroDocumento() {
+<span class="fc" id="L136">        return numeroDocumento;</span>
+    }
+
+    public void setNumeroDocumento(String numeroDocumento) {
+<span class="fc" id="L140">        this.numeroDocumento = numeroDocumento;</span>
+<span class="fc" id="L141">    }</span>
+
+    public String getDireccion() {
+<span class="fc" id="L144">        return direccion;</span>
+    }
+
+    public void setDireccion(String direccion) {
+<span class="fc" id="L148">        this.direccion = direccion;</span>
+<span class="fc" id="L149">    }</span>
+
+    public boolean isActivo() {
+<span class="fc" id="L152">        return activo;</span>
+    }
+
+    public void setActivo(boolean activo) {
+<span class="fc" id="L156">        this.activo = activo;</span>
+<span class="fc" id="L157">    }</span>
+
+    public LocalDateTime getCreadoEn() {
+<span class="fc" id="L160">        return creadoEn;</span>
+    }
+
+    public void setCreadoEn(LocalDateTime creadoEn) {
+<span class="fc" id="L164">        this.creadoEn = creadoEn;</span>
+<span class="fc" id="L165">    }</span>
+
+    public TipoUsuario getTipoUsuario() {
+<span class="fc" id="L168">        return tipoUsuario;</span>
+    }
+
+    public void setTipoUsuario(TipoUsuario tipoUsuario) {
+<span class="fc" id="L172">        this.tipoUsuario = tipoUsuario;</span>
+<span class="fc" id="L173">    }</span>
+
+    // Getter y Setter para teléfono
+    public String getTelefono() {
+<span class="nc" id="L177">        return telefono;</span>
+    }
+
+    public void setTelefono(String telefono) {
+<span class="nc" id="L181">        this.telefono = telefono;</span>
+<span class="nc" id="L182">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

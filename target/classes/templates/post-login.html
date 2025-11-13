@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>Post Login - Tipo de Usuario</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display:flex; align-items:center; justify-content:center; height:100vh; background:#f4f6fb; }
+        .card { background:white; padding:28px; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.08); text-align:center; width:360px; }
+        .tipo { font-size:20px; font-weight:700; color:#333; margin-bottom:8px; }
+        .sub { color:#666; margin-bottom:20px; }
+        .btn { display:inline-block; padding:12px 18px; background:linear-gradient(135deg,#667eea,#764ba2); color:white; border-radius:8px; text-decoration:none; font-weight:600; }
+        .muted { margin-top:12px; color:#999; font-size:13px; }
+    </style>
+    <meta th:if="${destino}" th:attr="content=${'3;url=' + destino}" http-equiv="refresh" />
+</head>
+<body>
+<div class="card">
+    <div class="tipo">Has iniciado sesión como:</div>
+    <div class="sub" th:text="${tipoDisplay}">Tipo de Usuario</div>
+
+    <a th:href="${destino}" class="btn">Ir al dashboard</a>
+
+    <div class="muted">
+        Serás redirigido automáticamente en 3 segundos.
+    </div>
+
+    <div style="margin-top:12px;color:#888;font-size:12px;" th:if="${usuarioClass}">
+        <span th:text="'Clase en sesión: ' + ${usuarioClass}">Clase en sesión</span>
+    </div>
+</div>
+</body>
+</html>

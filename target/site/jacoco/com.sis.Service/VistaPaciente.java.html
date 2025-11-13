@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>VistaPaciente.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">sis</a> &gt; <a href="index.source.html" class="el_package">com.sis.Service</a> &gt; <span class="el_source">VistaPaciente.java</span></div><h1>VistaPaciente.java</h1><pre class="source lang-java linenums">package com.sis.Service;
+
+import com.sis.Interface.IObservador;
+import com.sis.Model.Enum.TipoEvento;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+@Component
+<span class="fc" id="L9">public class VistaPaciente implements IObservador {</span>
+
+    @Autowired
+    private SmsService smsService;
+
+    @Override
+    public void actualizar(TipoEvento tipo, Object datos) {
+<span class="fc" id="L16">        System.out.println(&quot;Evento recibido por el paciente: &quot; + tipo);</span>
+<span class="fc" id="L17">        System.out.println(&quot;Datos: &quot; + datos);</span>
+<span class="fc bfc" id="L18" title="All 4 branches covered.">        switch (tipo){</span>
+            case CITA_CONFIRMADA:
+<span class="fc" id="L20">                smsService.enviarMensaje(&quot;Paciente&quot;,&quot;Su cita ha sido confirmada &quot; + datos);</span>
+<span class="fc" id="L21">                break;</span>
+            case DIAGNOSTICO_LISTO:
+<span class="fc" id="L23">                smsService.enviarMensaje(&quot;Paciente&quot;,&quot;Su diagnostico está listo &quot; + datos);</span>
+<span class="fc" id="L24">                break;</span>
+            case RESULTADO_DISPONIBLE:
+<span class="fc" id="L26">                smsService.enviarMensaje(&quot;Paciente&quot;,&quot;Ya puede consultar los resultados de su exámen: &quot; + datos);</span>
+<span class="fc" id="L27">                break;</span>
+            default:
+<span class="fc" id="L29">                smsService.enviarMensaje(&quot;Paciente&quot;,&quot;El evento no es relevante para el paciente.&quot;);</span>
+        }
+<span class="fc" id="L31">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>
