@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Paciente - Dashboard</title>
+    <style>
+        /* MISMO ESTILO */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px 30px;
+            max-width: 450px;
+            width: 100%;
+            text-align: center;
+            animation: fadeIn 0.5s ease;
+        }
+        h1 {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 28px;
+            margin-bottom: 15px;
+        }
+        p {
+            font-size: 16px;
+            color: #555;
+            margin-bottom: 30px;
+        }
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 14px 22px;
+            border-radius: 12px;
+            font-size: 16px;
+            text-decoration: none;
+            display: inline-block;
+            transition: all .3s;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h1>Bienvenido Paciente</h1>
+    <p>Esta es una vista de prueba de tu panel principal.</p>
+    <a class="btn" href="/">Volver al inicio</a>
+</div>
+
+</body>
+</html>

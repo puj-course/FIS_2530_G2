@@ -1,3 +1,4 @@
+// java
 package com.sis.Config;
 
 import com.sis.Service.CustomUserDetailsService;
@@ -28,26 +29,18 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
-                        // ⭐ RUTAS PÚBLICAS - NO REQUIEREN AUTENTICACIÓN
-                        .requestMatchers(
-                                "/",                // Página principal
-                                "/home",            // Home alternativa
-                                "/index",           // Index alternativo
-                                "/login",           // Login
-                                "/registro",        // ⭐ REGISTRO - CRÍTICO
-                                "/css/**",          // Archivos CSS
-                                "/js/**",           // Archivos JavaScript
-                                "/images/**",       // Imágenes
-                                "/static/**",       // Contenido estático
-                                "/h2-console/**"    // Consola H2 (solo desarrollo)
-                        ).permitAll()
-                        // Todas las demás rutas requieren autenticación
+                        .requestMatchers("/", "/home", "/index", "/login", "/registro", "/css/**", "/js/**").permitAll()
+                        .requestMatchers("/doctor/**").hasRole("DOCTOR")
+                        .requestMatchers("/enfermera/**").hasRole("ENFERMERA")
+                        .requestMatchers("/paciente/**").hasRole("PACIENTE")
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
+
                 .formLogin(form -> form
                         .loginPage("/login")
                         .loginProcessingUrl("/login")
-                        .defaultSuccessUrl("/dashboard", true)
+                        .defaultSuccessUrl("/post-login", true)
                         .failureUrl("/login?error=true")
                         .permitAll()
                 )
