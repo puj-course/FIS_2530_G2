@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Lista de Admisiones</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/enfermera">SIS - Enfermera</a>
+    </div>
+</nav>
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Tickets de Admisión</h1>
+        <a href="/enfermera/admisiones/nueva" class="btn btn-primary">
+            + Nueva Admisión
+        </a>
+    </div>
+
+    <!-- Filtro por estado -->
+    <div class="card mb-3">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Filtrar por estado:</label>
+                    <select name="estado" class="form-select" onchange="this.form.submit()">
+                        <option value="">Todos</option>
+                        <option th:each="est : ${estados}"
+                                th:value="${est}"
+                                th:text="${est}"
+                                th:selected="${est == estadoFiltro}">
+                        </option>
+                    </select>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tabla de tickets -->
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Paciente</th>
+                <th>Documento</th>
+                <th>Enfermera</th>
+                <th>Estado</th>
+                <th>Fecha Creación</th>
+                <th>Acciones</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:if="${#lists.isEmpty(tickets)}">
+                <td colspan="7" class="text-center text-muted">
+                    No hay tickets registrados
+                </td>
+            </tr>
+            <tr th:each="ticket : ${tickets}">
+                <td th:text="${#strings.substring(ticket.id.toString(), 0, 8)}"></td>
+                <td th:text="${ticket.paciente.nombreCompleto}"></td>
+                <td th:text="${ticket.paciente.numeroDocumento}"></td>
+                <td th:text="${ticket.enfermera != null ? ticket.enfermera.nombreCompleto : 'N/A'}"></td>
+                <td>
+                    <th:block th:switch="${ticket.estado.name()}">
+                        <span th:case="'PENDIENTE'" class="badge bg-warning" th:text="${ticket.estado}"></span>
+                        <span th:case="'EN_TRIAGE'" class="badge bg-info" th:text="${ticket.estado}"></span>
+                        <span th:case="'EN_CONSULTA'" class="badge bg-primary" th:text="${ticket.estado}"></span>
+                        <span th:case="'COMPLETADO'" class="badge bg-success" th:text="${ticket.estado}"></span>
+                        <span th:case="*" class="badge bg-secondary" th:text="${ticket.estado}"></span>
+                    </th:block>
+                </td>
+                <td th:text="${#temporals.format(ticket.creadoEn, 'dd/MM/yyyy HH:mm')}"></td>
+                <td>
+                    <div class="btn-group btn-group-sm">
+                        <a th:href="@{/enfermera/ticket/{id}(id=${ticket.id})}"
+                           class="btn btn-outline-primary">
+                            Ver
+                        </a>
+                        <a th:if="${ticket.estado.name() == 'PENDIENTE'}"
+                           th:href="@{/enfermera/triage/{id}(id=${ticket.id})}"
+                           class="btn btn-outline-success">
+                            Triage
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <a href="/enfermera/dashboard" class="btn btn-secondary mt-3">← Volver al Dashboard</a>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

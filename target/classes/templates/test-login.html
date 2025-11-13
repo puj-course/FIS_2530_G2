@@ -1,0 +1,24 @@
+<!-- html -->
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>Login de prueba</title>
+</head>
+<body>
+<h1>Login de prueba</h1>
+<form th:action="@{/test-login}" method="post">
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+    <label for="tipo">Selecciona Tipo de Usuario:</label>
+    <select id="tipo" name="tipo">
+        <option value="ADMIN">ADMIN</option>
+        <option value="DOCTOR">DOCTOR</option>
+        <option value="ENFERMERA">ENFERMERA</option>
+        <option value="PACIENTE">PACIENTE</option>
+        <option value="CLIENTE">CLIENTE</option>
+    </select>
+    <button type="submit">Iniciar sesión de prueba</button>
+</form>
+<p>Este formulario solo fija un objeto en sesión para validar la lógica de redirección (\`PostLoginController\`).</p>
+</body>
+</html>

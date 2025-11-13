@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Mis Tickets</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/enfermera">SIS - Enfermera</a>
+    </div>
+</nav>
+
+<div class="container mt-4">
+    <h1 class="mb-4">📋 Mis Tickets</h1>
+
+    <div th:if="${#lists.isEmpty(tickets)}" class="alert alert-info">
+        <strong>ℹ️ Sin tickets</strong>
+        <p class="mb-0">No has creado ningún ticket todavía.</p>
+        <a href="/enfermera/admisiones/nueva" class="btn btn-primary btn-sm mt-2">
+            Crear mi primer ticket
+        </a>
+    </div>
+
+    <div th:if="${not #lists.isEmpty(tickets)}" class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Paciente</th>
+                <th>Documento</th>
+                <th>Estado</th>
+                <th>Fecha</th>
+                <th>Triage</th>
+                <th>Acciones</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="ticket : ${tickets}">
+                <td th:text="${#strings.substring(ticket.id.toString(), 0, 8)}"></td>
+                <td th:text="${ticket.paciente.nombreCompleto}"></td>
+                <td th:text="${ticket.paciente.numeroDocumento}"></td>
+                <td>
+                    <th:block th:switch="${ticket.estado.name()}">
+                        <span th:case="'PENDIENTE'" class="badge bg-warning" th:text="${ticket.estado}"></span>
+                        <span th:case="'EN_TRIAGE'" class="badge bg-info" th:text="${ticket.estado}"></span>
+                        <span th:case="'EN_CONSULTA'" class="badge bg-primary" th:text="${ticket.estado}"></span>
+                        <span th:case="'COMPLETADO'" class="badge bg-success" th:text="${ticket.estado}"></span>
+                        <span th:case="*" class="badge bg-secondary" th:text="${ticket.estado}"></span>
+                    </th:block>
+                </td>
+                <td th:text="${#temporals.format(ticket.creadoEn, 'dd/MM/yyyy HH:mm')}"></td>
+                <td>
+                    <span th:if="${ticket.triage != null}" class="badge bg-success">✓ Registrado</span>
+                    <span th:unless="${ticket.triage != null}" class="badge bg-warning">Pendiente</span>
+                </td>
+                <td>
+                    <div class="btn-group btn-group-sm">
+                        <a th:href="@{/enfermera/ticket/{id}(id=${ticket.id})}"
+                           class="btn btn-outline-primary">
+                            Ver
+                        </a>
+                        <a th:if="${ticket.estado.name() == 'PENDIENTE' and ticket.triage == null}"
+                           th:href="@{/enfermera/triage/{id}(id=${ticket.id})}"
+                           class="btn btn-outline-success">
+                            Triage
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="mt-4">
+        <a href="/enfermera/dashboard" class="btn btn-secondary">← Volver al Dashboard</a>
+        <a href="/enfermera/admisiones/nueva" class="btn btn-primary">+ Nuevo Ticket</a>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

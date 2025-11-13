@@ -26,7 +26,7 @@ public interface PacienteRepo extends JpaRepository<Paciente, UUID> {
     List<Paciente> findByEsProvisional(boolean esProvisional);
     List<Paciente> findBySeguro(Aseguradora seguro);
 
-    @Query("SELECT p FROM Paciente p WHERE p.activo = true ORDER BY p.apellidos, p.nombres")
+    @Query("SELECT p FROM Paciente p WHERE p.activo = TRUE")
     List<Paciente> findAllActivos();
 
     @Query("SELECT p FROM Paciente p WHERE LOWER(p.nombres) LIKE LOWER(CONCAT('%', :nombre, '%')) OR LOWER(p.apellidos) LIKE LOWER(CONCAT('%', :nombre, '%'))")

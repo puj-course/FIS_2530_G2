@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Detalle de Ticket</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container-fluid">
+        <a class="navbar-brand" th:href="@{/enfermera/dashboard}">SIS - Enfermera</a>
+    </div>
+</nav>
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>🎫 Detalle del Ticket</h1>
+        <th:block th:switch="${ticket.estado.name()}">
+            <span th:case="'PENDIENTE'" class="badge bg-warning fs-5" th:text="${ticket.estado}"></span>
+            <span th:case="'EN_TRIAGE'" class="badge bg-info fs-5" th:text="${ticket.estado}"></span>
+            <span th:case="'EN_CONSULTA'" class="badge bg-primary fs-5" th:text="${ticket.estado}"></span>
+            <span th:case="'COMPLETADO'" class="badge bg-success fs-5" th:text="${ticket.estado}"></span>
+            <span th:case="*" class="badge bg-secondary fs-5" th:text="${ticket.estado}"></span>
+        </th:block>
+    </div>
+
+    <!-- Información del Ticket -->
+    <div class="card mb-3">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Información del Ticket</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>ID:</strong> <span th:text="${ticket.id}"></span></p>
+                    <p><strong>Fecha de Creación:</strong>
+                        <span th:text="${#temporals.format(ticket.creadoEn, 'dd/MM/yyyy HH:mm')}"></span>
+                    </p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Enfermera:</strong>
+                        <span th:text="${ticket.enfermera?.nombreCompleto ?: 'No asignada'}"></span>
+                    </p>
+                    <p><strong>Estado:</strong> <span th:text="${ticket.estado}"></span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Información del Paciente -->
+    <div class="card mb-3">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0">Información del Paciente</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Nombre:</strong> <span th:text="${paciente.nombreCompleto}"></span></p>
+                    <p><strong>Documento:</strong>
+                        <span th:text="${paciente.tipoDocumento + ' ' + paciente.numeroDocumento}"></span>
+                    </p>
+                    <p><strong>Edad:</strong> <span th:text="${paciente.edad + ' años'}"></span></p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Sexo:</strong> <span th:text="${paciente.sexo ?: 'No especificado'}"></span></p>
+                    <p><strong>Teléfono:</strong> <span th:text="${paciente.telefono ?: 'No registrado'}"></span></p>
+                    <p><strong>Seguro:</strong> <span th:text="${paciente.seguro}"></span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Información del Triage -->
+    <div class="card mb-3" th:if="${triage != null}">
+        <div class="card-header bg-success text-white">
+            <h5 class="mb-0">✓ Triage Registrado</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Síntomas:</strong></p>
+                    <p th:text="${triage.sintomas}"></p>
+                    <p><strong>Prioridad:</strong>
+                        <span class="badge bg-danger fs-6" th:text="${triage.prioridad}"></span>
+                    </p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Signos Vitales:</strong></p>
+                    <ul>
+                        <li>Temperatura: <span th:text="${triage.temperaturaC + '°C'}"></span></li>
+                        <li>Frecuencia Cardíaca: <span th:text="${triage.frecuenciaCardiaca + ' lpm'}"></span></li>
+                        <li>Presión: <span th:text="${triage.presionSistolica + '/' + triage.presionDiastolica + ' mmHg'}"></span></li>
+                        <li>Saturación O₂: <span th:text="${triage.saturacionO2 + '%'}"></span></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="alert alert-warning" th:if="${triage == null && ticket.estado.name() == 'PENDIENTE'}">
+        <strong>⚠️ Triage pendiente</strong>
+        <p class="mb-0">Este ticket aún no tiene triage registrado.</p>
+        <a th:href="@{/enfermera/triage/{id}(id=${ticket.id})}" class="btn btn-warning btn-sm mt-2">
+            Registrar Triage
+        </a>
+    </div>
+
+    <!-- Botones de acción -->
+    <div class="d-flex gap-2 mb-4">
+        <a href="/enfermera/admisiones" class="btn btn-secondary">
+            ← Volver a Admisiones
+        </a>
+        <a href="/enfermera/mis-tickets" class="btn btn-outline-secondary">
+            Ver Mis Tickets
+        </a>
+        <a th:if="${ticket.estado.name() == 'PENDIENTE' && triage == null}"
+           th:href="@{/enfermera/triage/{id}(id=${ticket.id})}"
+           class="btn btn-success">
+            Registrar Triage
+        </a>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
