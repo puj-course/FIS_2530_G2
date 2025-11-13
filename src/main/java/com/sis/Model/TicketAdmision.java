@@ -29,6 +29,10 @@ public class TicketAdmision {
     @Column(name = "creado_en", nullable = false, updatable = false)
     private LocalDateTime creadoEn;
 
+    // ⭐ NUEVO: Relación con Triage (bidireccional)
+    @OneToOne(mappedBy = "ticket", fetch = FetchType.LAZY)
+    private Triage triage;
+
     @PrePersist
     protected void onCreate() {
         if (creadoEn == null) {
@@ -77,5 +81,13 @@ public class TicketAdmision {
 
     public void setCreadoEn(LocalDateTime creadoEn) {
         this.creadoEn = creadoEn;
+    }
+
+    public Triage getTriage() {
+        return triage;
+    }
+
+    public void setTriage(Triage triage) {
+        this.triage = triage;
     }
 }

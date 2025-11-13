@@ -5,6 +5,7 @@ import com.sis.Repository.UsuarioRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class UserService {
@@ -16,7 +17,7 @@ public class UserService {
         return usuarioRepo.findAll();
     }
 
-    public Usuario getUsuarioById(int id) {
+    public Usuario getUsuarioById(UUID id) {
         return usuarioRepo.findById(id).orElse(new Usuario());
     }
     // importante diferenciar si id se refiere a documento o al UUID, dependiendo de cual sea, especificar!!!!
@@ -31,7 +32,7 @@ public class UserService {
 
     }
 
-    public void deleteUsuario(int usrId) {
+    public void deleteUsuario(UUID usrId) {
         usuarioRepo.deleteById(usrId);
 
     }
