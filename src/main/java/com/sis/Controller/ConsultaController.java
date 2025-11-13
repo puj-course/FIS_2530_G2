@@ -9,9 +9,9 @@ import com.sis.Patterns.Strategy.IExportadorHistoria;
 import com.sis.Patterns.Strategy.ExportadorHTML;
 import com.sis.Patterns.Strategy.ExportadorPDF;
 import com.sis.Patterns.Prototype.PacientePrototype;
-import com.sis.Repository.ConsultaRepo;
-import com.sis.Repository.PacienteRepo;
-import com.sis.Repository.TicketRepo;
+import com.sis.Service.ConsultaService;
+import com.sis.Service.PacienteService;
+import com.sis.Service.TicketService;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +19,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-        import java.io.IOException;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -29,20 +29,20 @@ import java.util.UUID;
 public class ConsultaController {
 
     @Autowired
-    private ConsultaRepo consultaRepo;
+    private ConsultaService consultaService;
 
     @Autowired
-    private PacienteRepo pacienteRepo;
+    private PacienteService pacienteService;
 
     @Autowired
-    private TicketRepo ticketRepo;
+    private TicketService ticketService;
 
     private IExportadorHistoria exportador;
 
     @GetMapping("/pendientes")
     public String listarConsultasPendientes(Model model, HttpSession session) {
         try {
-            List<TicketAdmision> ticketsPendientes = ticketRepo.findByEstado(EstadoTicket.EN_TRIAGE);
+            List<TicketAdmision> ticketsPendientes = ticketService.listarTicketsPorEstado(EstadoTicket.EN_TRIAGE);
             model.addAttribute("tickets", ticketsPendientes);
             return "consulta/lista-pendientes";
         } catch (Exception e) {
@@ -58,7 +58,7 @@ public class ConsultaController {
             HttpSession session) {
 
         try {
-            TicketAdmision ticket = ticketRepo.findById(ticketId)
+            TicketAdmision ticket = ticketService.obtenerTicketPorId(ticketId)
                     .orElseThrow(() -> new Exception("Ticket no encontrado"));
 
             Doctor doctor = (Doctor) session.getAttribute("usuario");
@@ -74,11 +74,11 @@ public class ConsultaController {
             consulta.setEnfermera(ticket.getEnfermera());
             consulta.setFechaHora(LocalDateTime.now());
 
-            Consulta consultaGuardada = consultaRepo.save(consulta);
+            Consulta consultaGuardada = consultaService.crearConsulta(consulta);
 
             // Actualizar estado del ticket
             ticket.setEstado(EstadoTicket.EN_CONSULTA);
-            ticketRepo.save(ticket);
+            ticketService.actualizarTicket(ticket);
 
             model.addAttribute("consulta", consultaGuardada);
             return "redirect:/consulta/formulario/" + consultaGuardada.getId();
@@ -92,7 +92,7 @@ public class ConsultaController {
     @GetMapping("/formulario/{consultaId}")
     public String mostrarFormularioConsulta(@PathVariable UUID consultaId, Model model) {
         try {
-            Consulta consulta = consultaRepo.findById(consultaId)
+            Consulta consulta = consultaService.obtenerConsultaPorId(consultaId)
                     .orElseThrow(() -> new Exception("Consulta no encontrada"));
 
             model.addAttribute("consulta", consulta);
@@ -113,11 +113,11 @@ public class ConsultaController {
             Model model) {
 
         try {
-            Consulta consulta = consultaRepo.findById(consultaId)
+            Consulta consulta = consultaService.obtenerConsultaPorId(consultaId)
                     .orElseThrow(() -> new Exception("Consulta no encontrada"));
 
             consulta.setMotivo(motivo);
-            consultaRepo.save(consulta);
+            consultaService.crearConsulta(consulta);
 
             model.addAttribute("mensaje", "Consulta actualizada exitosamente");
             return "redirect:/diagnostico/registrar/" + consultaId;
@@ -131,10 +131,10 @@ public class ConsultaController {
     @GetMapping("/historial/{pacienteId}")
     public String consultarHistorial(@PathVariable UUID pacienteId, Model model) {
         try {
-            Paciente paciente = pacienteRepo.findById(pacienteId)
+            Paciente paciente = pacienteService.obtenerPacientePorId(pacienteId)
                     .orElseThrow(() -> new Exception("Paciente no encontrado"));
 
-            List<Consulta> consultas = consultaRepo.findByPaciente(pacienteId);
+            List<Consulta> consultas = consultaService.listarConsultasPorPaciente(pacienteId);
 
             model.addAttribute("paciente", paciente);
             model.addAttribute("consultas", consultas);
@@ -153,10 +153,10 @@ public class ConsultaController {
             HttpServletResponse response) throws IOException {
 
         try {
-            Paciente paciente = pacienteRepo.findById(pacienteId)
+            Paciente paciente = pacienteService.obtenerPacientePorId(pacienteId)
                     .orElseThrow(() -> new Exception("Paciente no encontrado"));
 
-            List<Consulta> consultas = consultaRepo.findByPaciente(pacienteId);
+            List<Consulta> consultas = consultaService.listarConsultasPorPaciente(pacienteId);
 
             // Strategy Pattern: Seleccionar exportador según formato
             if (formato.equalsIgnoreCase("pdf")) {
@@ -190,7 +190,7 @@ public class ConsultaController {
                 return "redirect:/login";
             }
 
-            List<Consulta> consultas = consultaRepo.findByDoctor(doctor.getId());
+            List<Consulta> consultas = consultaService.listarConsultasPorDoctor(doctor.getId());
             model.addAttribute("consultas", consultas);
 
             return "consulta/mis-consultas";
@@ -204,14 +204,14 @@ public class ConsultaController {
     @ResponseBody
     public String clonarPacienteProvisional(@RequestParam UUID pacienteId) {
         try {
-            Paciente pacienteOriginal = pacienteRepo.findById(pacienteId)
+            Paciente pacienteOriginal = pacienteService.obtenerPacientePorId(pacienteId)
                     .orElseThrow(() -> new Exception("Paciente no encontrado"));
 
             // Prototype Pattern: Clonar paciente para registro rápido
             PacientePrototype prototype = new PacientePrototype(pacienteOriginal);
             Paciente pacienteClonado = prototype.clone();
 
-            Paciente guardado = pacienteRepo.save(pacienteClonado);
+            Paciente guardado = pacienteService.crearPaciente(pacienteClonado);
 
             return "{\"success\": true, \"message\": \"Paciente clonado\", \"pacienteId\": \"" + guardado.getId() + "\"}";
         } catch (Exception e) {
@@ -222,13 +222,13 @@ public class ConsultaController {
     @GetMapping("/finalizar/{consultaId}")
     public String finalizarConsulta(@PathVariable UUID consultaId, Model model) {
         try {
-            Consulta consulta = consultaRepo.findById(consultaId)
+            Consulta consulta = consultaService.obtenerConsultaPorId(consultaId)
                     .orElseThrow(() -> new Exception("Consulta no encontrada"));
 
             // Actualizar estado del ticket a COMPLETADO
             TicketAdmision ticket = consulta.getTicket();
             ticket.setEstado(EstadoTicket.COMPLETADO);
-            ticketRepo.save(ticket);
+            ticketService.actualizarTicket(ticket);
 
             model.addAttribute("mensaje", "Consulta finalizada exitosamente");
             return "redirect:/consulta/pendientes";

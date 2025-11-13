@@ -17,14 +17,12 @@ public interface ConsultaRepo extends JpaRepository<Consulta, UUID> {
     Consulta save(Consulta consulta);
     Optional<Consulta> findById(UUID id);
 
-    // MÉTODOS CORREGIDOS
     @Query("SELECT c FROM Consulta c WHERE c.paciente.id = :pacienteId ORDER BY c.fechaHora DESC")
     List<Consulta> findByPaciente(@Param("pacienteId") UUID pacienteId);
 
     @Query("SELECT c FROM Consulta c WHERE c.doctor.id = :doctorId ORDER BY c.fechaHora DESC")
     List<Consulta> findByDoctor(@Param("doctorId") UUID doctorId);
 
-    // NUEVOS MÉTODOS
     @Query("SELECT c FROM Consulta c WHERE c.fechaHora BETWEEN :inicio AND :fin ORDER BY c.fechaHora DESC")
     List<Consulta> findByFechaHoraBetween(@Param("inicio") LocalDateTime inicio,
                                           @Param("fin") LocalDateTime fin);
