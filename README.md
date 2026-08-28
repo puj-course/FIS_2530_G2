@@ -82,6 +82,5 @@ Once authenticated, users can access different modules based on their role (pati
 * Juan David Acuña Lesmes: Full time developer
 * Jonathan Martinez Gomez: Product Owner and developer
 * Juan Guillermo Gomez Landinez: Stakeholder and developer
-## Integrantes
+* Nassin Suz Soler :Devops engineer :  https://github.com/zeuznnss
 
-- Nassin - https://github.com/zeuznnss
